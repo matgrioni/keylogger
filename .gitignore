@@ -2,3 +2,7 @@
 !*.*
 !*/
 !Makefile
+
+# Ignore the log results
+log/*
+!log/.keep
