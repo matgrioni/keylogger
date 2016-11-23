@@ -4,7 +4,8 @@
 
 #include <pcap.h>
 
-#include "ip_header.h"
+#include "ip.h"
+#include "http.h"
 
 #define TCP_PROTOCOL 6
 
@@ -14,8 +15,51 @@
 
 /* TODO: Uncomment this. static const int PCAP_ERRBUF_SIZE = 100 */
 
+void process_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
+{
+    FILE *fd = (FILE*) args;
+    const u_char *payload;
+
+    const struct ethernet_header *eth_header;
+    const struct ip_header *ip_header;
+    const struct tcp_header *tcp_header;
+
+    u_int size_ip;
+    u_int size_tcp;
+    u_int size_payload;
+
+    eth_header = (struct ethernet_header*) packet;
+    ip_header = (struct ip_header*) (packet + ETHERNET_HEADER_LEN);
+    size_ip = IP_HL(ip_header) * 4;
+    if (size_ip < 20)
+    {
+        printf("Invalid packet received. Exiting...");
+        exit(1);
+    }
+
+    tcp_header = (struct tcp_header*) (packet + ETHERNET_HEADER_LEN + size_ip);
+    size_tcp = TH_OFF(tcp_header) * 4;
+    if (size_tcp < 20)
+    {
+        printf("Invalid packet received. Exiting...");
+        exit(1);
+    }
+
+    size_payload = ntohs(ip_header->ip_len) - (size_ip + size_tcp);
+    payload = packet + ETHERNET_HEADER_LEN + size_ip + size_tcp;
+    if (size_payload > 0)
+    {
+        if (is_http_request(payload, size_payload))
+        {
+            fprintf(fd, "%s\n", payload);
+        }
+    }
+}
+
 int main()
 {
+    FILE *network_log = fopen("log/network.txt", "a");
+
     /* Variables for pcap sniffing, such as error buffer, device to be read
        and filters, masks, etc. */
     char *dev, errbuf[100];
@@ -24,16 +68,6 @@ int main()
     bpf_u_int32 mask;
     bpf_u_int32 net;
     struct pcap_pkthdr header;
-
-    /* Information and structs for parsing the packet read by pcap */
-    const u_char *packet, *payload;
-
-    const struct ethernet_header *eth_header;
-    const struct ip_header *ip_header;
-    const struct tcp_header *tcp_header;
-
-    u_int size_ip;
-    u_int size_tcp;
 
     /* Create the default pcap device and exit if error occurs */
     dev = pcap_lookupdev(errbuf);
@@ -52,7 +86,7 @@ int main()
 
     /* Create a handle to start sniffint packets in non promiscuous
        mode. */
-    handle = pcap_open_live(dev, BUFSIZ, false, 3000, errbuf);
+    handle = pcap_open_live(dev, 1518, true, 1000, errbuf);
     if (handle == NULL)
     {
         printf("Couldn't open device: %s. Exiting...", errbuf);
@@ -72,28 +106,9 @@ int main()
         exit(1);
     }
 
-    packet = pcap_next(handle, &header);
+    pcap_loop(handle, -1, process_packet, (u_char*) network_log);
 
-    eth_header = (struct ethernet_header*) packet;
-    ip_header = (struct ip_header*) (packet + ETHERNET_HEADER_LEN);
-    size_ip = IP_HL(ip_header) * 4;
-    if (size_ip < 20)
-    {
-        printf("Invalid packet received. Exiting...");
-        exit(1);
-    }
-
-    tcp_header = (struct tcp_header*) (packet + ETHERNET_HEADER_LEN + size_ip);
-    size_tcp = TH_OFF(tcp_header) * 4;
-    if (size_tcp < 20)
-    {
-        printf("Invalid packet received. Exiting...");
-        exit(1);
-    }
-
-    payload = packet + ETHERNET_HEADER_LEN + size_ip + size_tcp;
-    printf("%s", payload);
-
+    pcap_freecode(&filter);
     pcap_close(handle);
 
     return 0;

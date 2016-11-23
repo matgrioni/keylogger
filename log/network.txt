@@ -1,0 +1,106 @@
+GET /questions/2703238/how-to-hijack-all-local-http-request-and-extract-the-url-using-c/2768724 HTTP/1.1
+Host: stackoverflow.com
+Connection: keep-alive
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,eo;q=0.6,fr;q=0.4
+Cookie: prov=c7017748-37a6-4686-9d1f-6f290dc278fa; __qca=P0-1038349362-1454353146977; cc=ee23f1b392a34bfeae5c18b8844009fd; csouser=t=xQk7xDvtp0C5&s=ETEmeQdPK0ml; _gat=1; acct=t=RcsmcMOVntRox%2bxiNyqEfQ7q9oGNRJMc&s=64ebiBonNg4HoL89PvvKDfb3nTon4QFQ; _ga=GA1.2.2124906946.1407003829
+
+
+GET /ados?t=1479938151519&request={%22Placements%22:[{%22A%22:22,%22S%22:8277,%22D%22:%22adzerk1309538303%22,%22AT%22:4,%22Z%22:[43]},{%22A%22:22,%22S%22:8277,%22D%22:%22adzerk1345926935%22,%22AT%22:4,%22Z%22:[44]},{%22A%22:22,%22S%22:8277,%22D%22:%22adzerk572897012%22,%22ATA%22:[5,17,2221],%22Z%22:[45]}],%22Keywords%22:%22c%2Chttp%2Cwinpcap%2Cx-user-registered%22,%22Referrer%22:%22%22,%22IsAsync%22:true} HTTP/1.1
+Host: engine.adzerk.net
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36
+Accept: */*
+Referer: http://stackoverflow.com/questions/2703238/how-to-hijack-all-local-http-request-and-extract-the-url-using-c/2768724
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,eo;q=0.6,fr;q=0.4
+Cookie: __cfduid=d854d2334db2c85c70e64a3cf8d0e201f1454636855; azk=ue1-2f37a37391904be2b74b7f4aaa6e1c68
+
+
+GET /pixel;r=547980686;a=p-c1rF4kxgLUzNc;fpan=0;fpa=P0-1038349362-1454353146977;ns=0;ce=1;cm=;je=0;sr=1366x768x24;enc=n;dst=1;et=1479938151537;tzo=300;ref=;url=http%3A%2F%2Fstackoverflow.com%2Fquestions%2F2703238%2Fhow-to-hijack-all-local-http-request-and-extract-the-url-using-c%2F2768724%232768724;ogl=type.website%2Cimage.http%3A%2F%2Fcdn%252Esstatic%252Enet%2FSites%2Fstackoverflow%2Fimg%2Fapple-touch-icon%402%252Epng%3Fv%3D73d79a89%2Ctitle.How%20to%20hijack%20all%20local%20http%20request%20and%20extract%20the%20url%20using%20c%3F%2Cdescription.If%20by%20%22hijack%22%20you%20meant%20sniff%20the%20packets%20then%20what%20you%20should%20do%20to%20do%20it%20with%2Curl.http%3A%2F%2Fstackoverflow%252Ecom%2Fquestions%2F2703238%2Fhow-to-hijack-all-local-http-request- HTTP/1.1
+Host: pixel.quantserve.com
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36
+Accept: image/webp,image/*,*/*;q=0.8
+Referer: http://stackoverflow.com/questions/2703238/how-to-hijack-all-local-http-request-and-extract-the-url-using-c/2768724
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,eo;q=0.6,fr;q=0.4
+Cookie: mc=56afaafb-07c63-26f1a-50759; d=EDoB7gEBwxaBsQLfkywgvvg7Gosm7NTR2MSj0yACDoUN_DsQAg8Qm2SYooGeWRYLpAAADJsaEpHKMPhoFgAOo3KByINxDpUbi6LBuKwgDR7eHhn00Z-S4ZnxD6owrVDugQyNEN6StI4qP_2xDtog__IJjHK8EN-8K1iy4Q
+
+
+GET /b?c1=2&c2=17440561&ns__t=1479938151540&ns_c=UTF-8&cv=3.1&c8=How%20to%20hijack%20all%20local%20http%20request%20and%20extract%20the%20url%20using%20c%3F%20-%20Stack%20Overflow&c7=http%3A%2F%2Fstackoverflow.com%2Fquestions%2F2703238%2Fhow-to-hijack-all-local-http-request-and-extract-the-url-using-c%2F2768724%232768724&c9= HTTP/1.1
+Host: b.scorecardresearch.com
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36
+Accept: image/webp,image/*,*/*;q=0.8
+Referer: http://stackoverflow.com/questions/2703238/how-to-hijack-all-local-http-request-and-extract-the-url-using-c/2768724
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,eo;q=0.6,fr;q=0.4
+Cookie: UID=3ee12fdf-23.74.8.177-1407002494; UIDR=1470231228; CP1=1
+
+
+GET /posts/2703238/ivc/83bb?_=1479938151318 HTTP/1.1
+Host: stackoverflow.com
+Connection: keep-alive
+Accept: */*
+X-Requested-With: XMLHttpRequest
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36
+Referer: http://stackoverflow.com/questions/2703238/how-to-hijack-all-local-http-request-and-extract-the-url-using-c/2768724
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,eo;q=0.6,fr;q=0.4
+Cookie: prov=c7017748-37a6-4686-9d1f-6f290dc278fa; __qca=P0-1038349362-1454353146977; cc=ee23f1b392a34bfeae5c18b8844009fd; csouser=t=xQk7xDvtp0C5&s=ETEmeQdPK0ml; _gat=1; acct=t=RcsmcMOVntRox%2bxiNyqEfQ7q9oGNRJMc&s=64ebiBonNg4HoL89PvvKDfb3nTon4QFQ; _ga=GA1.2.2124906946.1407003829
+
+
+GET /posts/markdown-help?postfix=&_=1479938151319 HTTP/1.1
+Host: stackoverflow.com
+Connection: keep-alive
+Accept: */*
+X-Requested-With: XMLHttpRequest
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36
+Referer: http://stackoverflow.com/questions/2703238/how-to-hijack-all-local-http-request-and-extract-the-url-using-c/2768724
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,eo;q=0.6,fr;q=0.4
+Cookie: prov=c7017748-37a6-4686-9d1f-6f290dc278fa; __qca=P0-1038349362-1454353146977; cc=ee23f1b392a34bfeae5c18b8844009fd; csouser=t=xQk7xDvtp0C5&s=ETEmeQdPK0ml; _gat=1; acct=t=RcsmcMOVntRox%2bxiNyqEfQ7q9oGNRJMc&s=64ebiBonNg4HoL89PvvKDfb3nTon4QFQ; _ga=GA1.2.2124906946.1407003829
+
+
+GET /fl/markup-bg.js?lw=583&zc=7&pf=3&omni=ASG2LACGPykAAgAAAAIAAAADIgAAAHxjfGh0dHB8d2lucGNhcHx4LXVzZXItcmVnaXN0ZXJlZHwAU0P1BtPgHLR5sg HTTP/1.1
+Host: clc.stackoverflow.com
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36
+Accept: */*
+Referer: http://stackoverflow.com/questions/2703238/how-to-hijack-all-local-http-request-and-extract-the-url-using-c/2768724
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,eo;q=0.6,fr;q=0.4
+Cookie: prov=c7017748-37a6-4686-9d1f-6f290dc278fa; __qca=P0-1038349362-1454353146977; _gat=1; acct=t=RcsmcMOVntRox%2bxiNyqEfQ7q9oGNRJMc&s=64ebiBonNg4HoL89PvvKDfb3nTon4QFQ; _ga=GA1.2.2124906946.1407003829
+
+
+GET /p.js?zones=1%3Dhireme&ac=2930209&tags=c%3Bhttp%3Bwinpcap&host=stackoverflow.com&lw=588&az=1 HTTP/1.1
+Host: clc.stackoverflow.com
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36
+Accept: */*
+Referer: http://stackoverflow.com/questions/2703238/how-to-hijack-all-local-http-request-and-extract-the-url-using-c/2768724
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,eo;q=0.6,fr;q=0.4
+Cookie: prov=c7017748-37a6-4686-9d1f-6f290dc278fa; __qca=P0-1038349362-1454353146977; _gat=1; acct=t=RcsmcMOVntRox%2bxiNyqEfQ7q9oGNRJMc&s=64ebiBonNg4HoL89PvvKDfb3nTon4QFQ; _ga=GA1.2.2124906946.1407003829
+
+
+GET /fl/impression.gif?an=47R9bFb3WviKh_5s9-BQJiYGBgYWBhD4x9hmr8mguE2HIT5ag4HhuAZEpiF382zLNKfndizy8WIMDPvEwMI9B5uyd1kWPfSwl5-lDhSAKBY5cEDoueVjE0N7-X4HBgYdF7Co5ZHQ1actczV07eVf6zIwlOqBRZsO8i6_Yak1xcuewfBIXcuso-eX6v0CAA HTTP/1.1
+Host: clc.stackoverflow.com
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36
+Accept: image/webp,image/*,*/*;q=0.8
+Referer: http://stackoverflow.com/questions/2703238/how-to-hijack-all-local-http-request-and-extract-the-url-using-c/2768724
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,eo;q=0.6,fr;q=0.4
+Cookie: prov=c7017748-37a6-4686-9d1f-6f290dc278fa; __qca=P0-1038349362-1454353146977; _gat=1; acct=t=RcsmcMOVntRox%2bxiNyqEfQ7q9oGNRJMc&s=64ebiBonNg4HoL89PvvKDfb3nTon4QFQ; _ga=GA1.2.2124906946.1407003829
+
+
+GET /soi.gif?an=Y2Ni2L3MvO618BUPBsVtOgysjAybJjKxsjAwMrAzAAFLdTYzQ8LN_rjoo4_sWcHijClAgoUbJAlSws8KJNaXMDM8slMXOHPmIUyVHEgVI0gVSCk_M5Ao92dmWJMhHRVZ-AymigGkShCkig2mKjaLmSGvbPafPf4v7ZkRNvJzgNxT8W25ah3z97lCVQA&at=0&pt=100 HTTP/1.1
+Host: clc.stackoverflow.com
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrom
