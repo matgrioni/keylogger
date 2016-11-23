@@ -4,23 +4,36 @@
 
 #include <pcap.h>
 
+#include "ip_header.h"
+
 #define TCP_PROTOCOL 6
 
 /* TODO: Can these be used in pcap filter */
 #define HTTP_PORT 80
 #define HTTPS_PORT 443
 
-/* TODO: Uncomment this. static const int PCAP_ERRBUF_SIZE = 100; */
+/* TODO: Uncomment this. static const int PCAP_ERRBUF_SIZE = 100 */
 
 int main()
 {
+    /* Variables for pcap sniffing, such as error buffer, device to be read
+       and filters, masks, etc. */
     char *dev, errbuf[100];
     pcap_t *handle;
     struct bpf_program filter;
     bpf_u_int32 mask;
     bpf_u_int32 net;
     struct pcap_pkthdr header;
-    const u_char *packet;
+
+    /* Information and structs for parsing the packet read by pcap */
+    const u_char *packet, *payload;
+
+    const struct ethernet_header *eth_header;
+    const struct ip_header *ip_header;
+    const struct tcp_header *tcp_header;
+
+    u_int size_ip;
+    u_int size_tcp;
 
     /* Create the default pcap device and exit if error occurs */
     dev = pcap_lookupdev(errbuf);
@@ -60,7 +73,27 @@ int main()
     }
 
     packet = pcap_next(handle, &header);
-    printf("%d", header.len);
+
+    eth_header = (struct ethernet_header*) packet;
+    ip_header = (struct ip_header*) (packet + ETHERNET_HEADER_LEN);
+    size_ip = IP_HL(ip_header) * 4;
+    if (size_ip < 20)
+    {
+        printf("Invalid packet received. Exiting...");
+        exit(1);
+    }
+
+    tcp_header = (struct tcp_header*) (packet + ETHERNET_HEADER_LEN + size_ip);
+    size_tcp = TH_OFF(tcp_header) * 4;
+    if (size_tcp < 20)
+    {
+        printf("Invalid packet received. Exiting...");
+        exit(1);
+    }
+
+    payload = packet + ETHERNET_HEADER_LEN + size_ip + size_tcp;
+    printf("%s", payload);
+
     pcap_close(handle);
 
     return 0;
