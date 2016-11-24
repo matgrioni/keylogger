@@ -2,6 +2,7 @@
 !*.*
 !*/
 !Makefile
+*.o
 
 # Ignore the log results
 log/*
