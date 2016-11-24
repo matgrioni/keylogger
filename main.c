@@ -14,46 +14,25 @@
 #define HTTPS_PORT 443
 
 /* TODO: Uncomment this. static const int PCAP_ERRBUF_SIZE = 100 */
-
-void process_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
+void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
     FILE *fd = (FILE*) args;
+
+    struct ethernet_header *eth;
+    struct ip_header *ip;
+    struct tcp_header *tcp;
     const u_char *payload;
+    u_int p_size;
 
-    const struct ethernet_header *eth_header;
-    const struct ip_header *ip_header;
-    const struct tcp_header *tcp_header;
-
-    u_int size_ip;
-    u_int size_tcp;
-    u_int size_payload;
-
-    eth_header = (struct ethernet_header*) packet;
-    ip_header = (struct ip_header*) (packet + ETHERNET_HEADER_LEN);
-    size_ip = IP_HL(ip_header) * 4;
-    if (size_ip < 20)
+    if (process_packet(packet, &eth, &ip, &tcp, &payload, &p_size) < 0)
     {
-        printf("Invalid packet received. Exiting...");
+        printf("There was an error processing the packet.");
         exit(1);
     }
 
-    tcp_header = (struct tcp_header*) (packet + ETHERNET_HEADER_LEN + size_ip);
-    size_tcp = TH_OFF(tcp_header) * 4;
-    if (size_tcp < 20)
-    {
-        printf("Invalid packet received. Exiting...");
-        exit(1);
-    }
-
-    size_payload = ntohs(ip_header->ip_len) - (size_ip + size_tcp);
-    payload = packet + ETHERNET_HEADER_LEN + size_ip + size_tcp;
-    if (size_payload > 0)
-    {
-        if (is_http_request(payload, size_payload))
-        {
+    if (p_size > 0)
+        if (is_http_request(payload, p_size))
             fprintf(fd, "%s\n", payload);
-        }
-    }
 }
 
 int main()
@@ -106,7 +85,7 @@ int main()
         exit(1);
     }
 
-    pcap_loop(handle, -1, process_packet, (u_char*) network_log);
+    pcap_loop(handle, -1, packet_received, (u_char*) network_log);
 
     pcap_freecode(&filter);
     pcap_close(handle);

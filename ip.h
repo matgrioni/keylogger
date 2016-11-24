@@ -2,7 +2,7 @@
 #include <netinet/in.h>
 
 /* NOTE: Code adapted from libpcap documentation. */
-#define ETHERNET_HEADER_LEN 14
+#define ETHERNET_HEADER_SIZE 14
 #define ETHER_ADDR_LEN 6
 
 struct ethernet_header
@@ -55,3 +55,5 @@ struct tcp_header
     u_short th_sum;
     u_short th_urp;
 };
+
+int process_packet(const u_char *packet, struct ethernet_header **eth, struct ip_header **ip, struct tcp_header **tcp, const u_char **payload, u_int *size_payload);
