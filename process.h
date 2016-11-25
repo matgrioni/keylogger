@@ -1,1 +1,3 @@
-int exists_task_by_id(int pid);
+#include <unistd.h>
+
+int exists_process_by_id(pid_t pid);

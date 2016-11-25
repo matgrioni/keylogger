@@ -5,7 +5,7 @@
 
 #include "process.h"
 
-int exists_task_by_id(int pid)
+int exists_process_by_id(pid_t pid)
 {
     DIR *dp;
     struct dirent *ep;
