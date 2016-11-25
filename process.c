@@ -23,3 +23,20 @@ int exists_process_by_id(pid_t pid)
 
     return 0;
 }
+
+void process_periodic_check(pid_t pid, int s, int limit, void (*cbk)(void))
+{
+    int cur_s = 0;
+    while (cur_s < limit)
+    {
+        int exists = exists_process_by_id(pid);
+        if (!exists)
+        {
+            cbk();
+            break;
+        }
+
+        sleep(s);
+        cur_s += s;
+    }
+}
