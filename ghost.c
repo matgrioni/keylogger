@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include "process.h"
 
@@ -34,6 +35,7 @@ int main(int argc, char **argv)
     while(1)
     {
         cur_pid = process_periodic_check(cur_pid, 5, -1, exec_main);
+        wait(NULL);
     }
 
     return 0;
