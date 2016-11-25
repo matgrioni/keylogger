@@ -10,4 +10,4 @@ int exists_process_by_id(pid_t pid);
  * s seconds. Put in a limit of seconds to check, or a negative number
  * to check indefinitely.
  */
-void process_periodic_check(pid_t pid, int s, int limit, void (*cbk)(void));
+pid_t process_periodic_check(pid_t pid, int s, int limit, pid_t (*cbk)(void));
