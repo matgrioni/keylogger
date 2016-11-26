@@ -46,7 +46,6 @@ int main(int argc, char **argv)
 
 pid_t exec_main()
 {
-    printf("Starting main...\n");
     pid_t parent_id = getpid();
     pid_t pid = fork();
     if (pid < 0)
@@ -59,6 +58,7 @@ pid_t exec_main()
         char str_id[6];
         sprintf(str_id, "%d", parent_id);
 
+        printf("Starting main...\n");
         execlp("./main", "./main", str_id, NULL);
     }
 
