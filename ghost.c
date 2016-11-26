@@ -12,6 +12,7 @@
  * process much faster.
  */
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -20,6 +21,7 @@
 #include "process.h"
 
 pid_t exec_main();
+void* keep_main_alive(void *args);
 
 int main(int argc, char **argv)
 {
@@ -31,12 +33,13 @@ int main(int argc, char **argv)
 
     pid_t parent_id = atoi(argv[1]);
 
-    pid_t cur_pid = parent_id;
-    while(1)
-    {
-        cur_pid = process_periodic_check(cur_pid, 5, -1, exec_main);
-        wait(NULL);
-    }
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+
+    pthread_t aliver;
+    pthread_create(&aliver, &attr, keep_main_alive, &parent_id);
+
+    pthread_join(aliver, NULL);
 
     return 0;
 }
@@ -60,4 +63,14 @@ pid_t exec_main()
     }
 
     return pid;
+}
+
+void* keep_main_alive(void *args)
+{
+    pid_t cur_pid = *((int *) args);
+    while(1)
+    {
+        cur_pid = process_periodic_check(cur_pid, 5, -1, exec_main);
+        wait(NULL);
+    }
 }
