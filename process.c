@@ -29,7 +29,6 @@ pid_t process_periodic_check(pid_t pid, int s, int limit, pid_t (*cbk)(void))
     int cur_s = 0;
     while (cur_s < limit || limit < 0)
     {
-        printf("Iter\n");
         int exists = exists_process_by_id(pid);
         if (!exists)
             return cbk();
