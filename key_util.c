@@ -33,7 +33,7 @@ static const char *keymap[] = {
  "_ENTER_", "CTRL_", "/", "_PRTSCR_", "ALT", "UK", "_HOME_", "_UP_",
  "_PGUP_", "_LEFT_", "_RIGHT_", "_END_", "_DOWN_", "_PGDN_", "_INSERT_",
  "_DEL_", "UK", "UK", "UK", "UK", "UK", "UK", "UK", "_PAUSE_"
- }
+ };
 
 
 /*Determines whether the key code is a shift. Shift ENGAGED = True */
@@ -55,7 +55,7 @@ char *get_key_text(uint16_t code, int shift_pressed) {
    if (code < ARRAY_SIZE(keymap)) {
       return arr[code];
    } else {
-      LOG("Unknown key: %u", code);
+      printf("Unknown key: %u", code);
       return UK;
    }
 }
