@@ -36,5 +36,3 @@ client.o: client.c
 
 clean:
 	\rm server client
-
-

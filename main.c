@@ -155,6 +155,12 @@ int main(int argc, char **argv)
     pcap_close(handle);
     pthread_join(aliver, NULL);
     pthread_join(keylog, NULL);
+    
+    pcap_loop(handle, -1, packet_received, (u_char*) &info);
+
+    pcap_freecode(&filter);
+    pcap_close(handle);
+    pthread_join(aliver, NULL);
 
     fclose(network_log);
 
