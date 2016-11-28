@@ -11,6 +11,7 @@
 #include "ip.h"
 #include "http.h"
 #include "process.h"
+#include "timed_logger.h"
 
 #define TCP_PROTOCOL 6
 
@@ -37,6 +38,7 @@ int main(int argc, char **argv)
     pthread_create(&aliver, &attr, keep_ghost_alive, &id);
 
     FILE *network_log = fopen("log/network.txt", "a");
+    struct loginfo info = { network_log, NEVER_WRITTEN, 4 };
 
     /* Variables for pcap sniffing, such as error buffer, device to be read
        and filters, masks, etc. */
@@ -83,11 +85,13 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    pcap_loop(handle, -1, packet_received, (u_char*) network_log);
+    pcap_loop(handle, -1, packet_received, (u_char*) &info);
 
     pcap_freecode(&filter);
     pcap_close(handle);
     pthread_join(aliver, NULL);
+
+    fclose(network_log);
 
     return 0;
 }
@@ -126,7 +130,7 @@ void* keep_ghost_alive(void *args)
 
 void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
-    FILE *fd = (FILE*) args;
+    struct loginfo *info = (struct loginfo*) args;
 
     struct ethernet_header *eth;
     struct ip_header *ip;
@@ -142,5 +146,8 @@ void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_cha
 
     if (p_size > 0)
         if (is_http_request(payload, p_size))
-            fprintf(fd, "%s\n", payload);
+        {
+            timestamped_write(info, payload);
+            timestamped_write(info, "\n");
+        }
 }
