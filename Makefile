@@ -27,4 +27,14 @@ key_util.o: key_util.h key_util.c
 config.o: config.h config.c
 	gcc -Wall -c config.c
 
+server.o: server.c
+	gcc -Wall -c server.c
+
+client.o: client.c
+	gcc -Wall -c client.c
+
+
+clean:
+	\rm server client
+
 
