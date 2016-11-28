@@ -1,4 +1,8 @@
+#include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -6,6 +10,7 @@
 
 #include "ip.h"
 #include "http.h"
+#include "process.h"
 
 #define TCP_PROTOCOL 6
 
@@ -14,29 +19,23 @@
 #define HTTPS_PORT 443
 
 /* TODO: Uncomment this. static const int PCAP_ERRBUF_SIZE = 100 */
-void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
+
+pid_t exec_ghost();
+void* keep_ghost_alive(void *args);
+void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+
+int main(int argc, char **argv)
 {
-    FILE *fd = (FILE*) args;
+    pid_t id = -1;
+    if (argc >= 2)
+        id = atoi(argv[1]);
 
-    struct ethernet_header *eth;
-    struct ip_header *ip;
-    struct tcp_header *tcp;
-    const u_char *payload;
-    u_int p_size;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
 
-    if (process_packet(packet, &eth, &ip, &tcp, &payload, &p_size) < 0)
-    {
-        printf("There was an error processing the packet.");
-        exit(1);
-    }
+    pthread_t aliver;
+    pthread_create(&aliver, &attr, keep_ghost_alive, &id);
 
-    if (p_size > 0)
-        if (is_http_request(payload, p_size))
-            fprintf(fd, "%s\n", payload);
-}
-
-int main()
-{
     FILE *network_log = fopen("log/network.txt", "a");
 
     /* Variables for pcap sniffing, such as error buffer, device to be read
@@ -46,7 +45,6 @@ int main()
     struct bpf_program filter;
     bpf_u_int32 mask;
     bpf_u_int32 net;
-    struct pcap_pkthdr header;
 
     /* Create the default pcap device and exit if error occurs */
     dev = pcap_lookupdev(errbuf);
@@ -89,6 +87,60 @@ int main()
 
     pcap_freecode(&filter);
     pcap_close(handle);
+    pthread_join(aliver, NULL);
 
     return 0;
+}
+
+pid_t exec_ghost()
+{
+    pid_t parent_id = getpid();
+    pid_t id = fork();
+
+    if (id < 0)
+    {
+        printf("There was an error forking. Exiting...\n");
+        exit(1);
+    }
+    else if (id == 0)
+    {
+        char str_id[6];
+        sprintf(str_id, "%d", parent_id);
+
+        printf("Starting ghost...\n");
+        execlp("./ghost", "./ghost", str_id, NULL);
+    }
+
+    return id;
+}
+
+void* keep_ghost_alive(void *args)
+{
+    pid_t cur_pid = *((int *) args);
+    while(1)
+    {
+        cur_pid = process_periodic_check(cur_pid, 5, -1, exec_ghost);
+        wait(NULL);
+    }
+}
+
+void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
+{
+    FILE *fd = (FILE*) args;
+
+    struct ethernet_header *eth;
+    struct ip_header *ip;
+    struct tcp_header *tcp;
+    const u_char *payload;
+    u_int p_size;
+
+    if (process_packet(packet, &eth, &ip, &tcp, &payload, &p_size) < 0)
+    {
+        printf("There was an error processing the packet.");
+        exit(1);
+    }
+
+    if (p_size > 0)
+        if (is_http_request(payload, p_size))
+            fprintf(fd, "%s\n", payload);
 }
