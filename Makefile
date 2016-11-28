@@ -1,4 +1,4 @@
-MAIN_OBJS = http.o ip.o process.o timed_logger.o key_util.o config.o
+MAIN_OBJS = http.o ip.o process.o timed_logger.o key_util.o config.o server.o client.o
 GHOST_OBJS = process.o
 
 all: main ghost

