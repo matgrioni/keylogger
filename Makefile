@@ -1,13 +1,10 @@
-OBJS = http.o ip.o key_util.o config.o
+MAIN_OBJS = http.o ip.o process.o timed_logger.o key_util.o config.o
+GHOST_OBJS = process.o
 
-main: main.c $(OBJS)
-	gcc main.c ip.o http.o key_util.o config.o -lpcap -o main
+all: main ghost
 
-http.o: http.h http.c
-	gcc -Wall -c http.c
-
-ip.o: ip.h ip.c
-	gcc -Wall -c ip.c
+timed_logger.o: timed_logger.h timed_logger.c
+gcc -Wall -c timed_logger.c
 
 key_util.o: key_util.h key_util.c
 gcc -Wall -c key_util.c
