@@ -2,6 +2,7 @@
 !*.*
 !*/
 !Makefile
+!keylogger
 *.o
 
 # Ignore the log results

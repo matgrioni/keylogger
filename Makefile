@@ -1,4 +1,7 @@
+OBJS = http.o ip.o process.o timed_logger.o
 MAIN_OBJS = http.o ip.o process.o timed_logger.o key_util.o config.o server.o client.o
+BJS = http.o ip.o process.o timed_logger.o
+
 GHOST_OBJS = process.o
 
 all: main ghost
@@ -33,6 +36,5 @@ server.o: server.c
 client.o: client.c
 	gcc -Wall -c client.c
 
-
 clean:
-	\rm server client
+	rm main ghost server client $(OBJS)

