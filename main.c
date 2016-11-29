@@ -21,9 +21,17 @@
 
 /* TODO: Uncomment this. static const int PCAP_ERRBUF_SIZE = 100 */
 
+struct sniffer_args
+{
+    pcap_t *handle;
+    struct loginfo *info;
+};
+
 pid_t exec_ghost();
 void* keep_ghost_alive(void *args);
+
 void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+void* sniff(void* args);
 
 int main(int argc, char **argv)
 {
@@ -89,11 +97,15 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    pcap_loop(handle, -1, packet_received, (u_char*) &info);
+    struct sniffer_args args = { handle, &info };
+    pthread_t sniffer;
+    pthread_create(&sniffer, NULL, sniff, &args);
+
+    pthread_join(sniffer, NULL);
+    pthread_join(aliver, NULL);
 
     pcap_freecode(&filter);
     pcap_close(handle);
-    pthread_join(aliver, NULL);
 
     fclose(network_log);
 
@@ -156,4 +168,17 @@ void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_cha
             timestamped_write(info, "\n");
         }
     }
+}
+
+void* sniff(void* args)
+{
+    struct sniffer_args *s_args = args;
+    pcap_t *handle = s_args->handle;
+    struct loginfo *info = s_args->info;
+
+    pcap_loop(handle, -1, packet_received, (u_char*) info);
+
+    /* This will only be reached if sniffing stops, which is when an
+       error in packet retrieval occurs */
+    return (void*) -1;
 }
