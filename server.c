@@ -1,16 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>       // strlen
+#include <sys/socket.h>   // socket
+#include <arpa/inet.h>    // inet_addr
+#include <unistd.h>       // write
+#include <fcntl.h>
 
-#include "server_client.h"
-
-void run_server(void)
+int main()
 {
     // Variables
     int ssock, csock, addrlen, read_size, ret;
     struct sockaddr_in server, client;
-    char rec_buffer[2000];
+    char rec_buffer[3000];
     
-    short port = 8888;
+    short port = 8888;  //TCP port
     
     // Create a socket. Return value is a file descriptor for the socket.
     ssock = socket(AF_INET, SOCK_STREAM, 0);
@@ -81,6 +84,4 @@ void run_server(void)
     close(csock);
     close(ssock);
     printf("End connection\n");
-    
-    return 0;
 }

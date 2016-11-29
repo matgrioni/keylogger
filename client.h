@@ -1,5 +1,5 @@
-#ifndef _SERVER_CLIENT_H_
-#define _SERVER_CLIENT_H_
+#ifndef _CLIENT_H_
+#define _CLIENT_H_
 
 #include <string.h>       // strlen
 #include <sys/socket.h>   // socket
@@ -7,8 +7,7 @@
 #include <unistd.h>       // write
 #include <fcntl.h>
 
-void run_client(void);
-void run_server(void);
+void start_client(void);
 
 #endif
 

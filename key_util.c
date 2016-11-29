@@ -46,7 +46,7 @@ char *get_key_text(uint16_t code, int shift_pressed) {
    ASSERT_ON_COMPILE(ARRAY_SIZE(keymap) == ARRAY_SIZE(keymap_shift));
 
    char **arr;
-   if (shift_pressed != 0) {
+   if (shift_pressed == 1) {
       arr = keymap_shift;
    } else {
       arr = keymap;

@@ -1,16 +1,19 @@
 OBJS = http.o ip.o process.o timed_logger.o
-MAIN_OBJS = http.o ip.o process.o timed_logger.o key_util.o config.o server.o client.o
+MAIN_OBJS = http.o ip.o process.o timed_logger.o key_util.o config.o client.o
 BJS = http.o ip.o process.o timed_logger.o
 
 GHOST_OBJS = process.o
 
-all: main ghost
+all: main ghost server
 
 main: main.c $(MAIN_OBJS)
 	gcc -Wall main.c $(MAIN_OBJS) -o main -lpthread -lpcap
 
 ghost: ghost.c $(GHOST_OBJS)
 	gcc -Wall ghost.c $(GHOST_OBJS) -o ghost -lpthread
+
+server: server.c
+	gcc -Wall -c server.c -o server
 
 process.o: process.c process.h
 	gcc -Wall -c process.c
@@ -29,9 +32,6 @@ key_util.o: key_util.h key_util.c
 
 config.o: config.h config.c
 	gcc -Wall -c config.c
-
-server.o: server.c
-	gcc -Wall -c server.c
 
 client.o: client.c
 	gcc -Wall -c client.c
