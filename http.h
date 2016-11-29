@@ -9,15 +9,4 @@
 
 #include <string.h>
 
-static const char *http_methods[] = {
-    "OPTIONS",
-    "GET",
-    "HEAD",
-    "POST",
-    "PUT",
-    "DELETE",
-    "TRACE",
-    "CONNECT"
-};
-
 int is_http_request(const char *payload, int size);
