@@ -7,6 +7,23 @@ To install the keylogger there is a bash script, `install.sh` which prompts to i
 ## Uninstall
 To uninstall the keylogger, run the bash script, `uninstall.sh` which deletes the folder `/.keylogger` and removes the startup script from `/etc/init./d` and removes it with `update-rc.d`.
 
+## Use
+After running the install script, the program should start automatically and should start automatically on each subsequent bootup of the system. If this is not the case, you can still run the program manually through these commands:
+
+```
+cd /.keylogger
+sudo ./main
+```
+
+Further, to actually get results from the compromised system, the hacker must have the server running. The hacker does not need to run the install script on their system. Simply run:
+
+```
+make server
+./server
+```
+
+Simply make sure before hand that the client code has the ip address you want to send the information to, which will be where the server is run.
+
 ## Notes
 This has only been tested with Ubuntu 16.04.
 
