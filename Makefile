@@ -1,3 +1,4 @@
+OBJS = http.o ip.o process.o timed_logger.o
 MAIN_OBJS = http.o ip.o process.o timed_logger.o
 GHOST_OBJS = process.o
 
@@ -20,3 +21,6 @@ ip.o: ip.h ip.c
 
 timed_logger.o: timed_logger.h timed_logger.c
 	gcc -Wall -c timed_logger.c
+
+clean:
+	rm main ghost $(OBJS)
