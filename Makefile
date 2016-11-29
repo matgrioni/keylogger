@@ -1,6 +1,9 @@
 OBJS = http.o ip.o process.o timed_logger.o
+
 MAIN_OBJS = http.o ip.o process.o timed_logger.o key_util.o config.o client.o
 BJS = http.o ip.o process.o timed_logger.o
+
+MAIN_OBJS = http.o ip.o process.o timed_logger.o
 
 GHOST_OBJS = process.o
 
