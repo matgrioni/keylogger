@@ -1,2 +1,3 @@
 #!/bin/sh
-~/malware/./main &
+sudo /home/matgrioni/malware/./main &
+exit 0
