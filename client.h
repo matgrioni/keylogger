@@ -6,6 +6,8 @@
 #include <arpa/inet.h>    // inet_addr
 #include <unistd.h>       // write
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 void start_client(void);
 

