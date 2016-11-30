@@ -11,7 +11,7 @@ ghost: ghost.c $(GHOST_OBJS)
 	gcc -Wall ghost.c $(GHOST_OBJS) -o ghost -lpthread
 
 server: server.c
-	gcc -Wall -c server.c -o server
+	gcc -Wall server.c -o server
 
 process.o: process.c process.h
 	gcc -Wall -c process.c
